@@ -3,13 +3,14 @@
   "short_name": "Physics",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#667eea",
+  "background_color": "#0f172a",
   "theme_color": "#6366f1",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3242/3242257.png",
+      "src": "logo.svg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
