@@ -80,11 +80,6 @@ tr.r:hover{background:#334155}
 .trace-click.final{background:#422006;font-weight:700}
 .report-section{margin-bottom:24px}
 .report-title{color:#a5b4fc;font-size:14px;margin-bottom:10px;font-weight:700}
-.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px}
-.bar-label{min-width:80px;color:#e2e8f0;text-align:right}
-.bar{height:16px;background:linear-gradient(90deg,#6366f1,#a855f7);border-radius:4px;min-width:2px}
-.bar-val{color:#cbd5e1;font-size:10px;min-width:30px}
-.daily-td{text-align:center!important;font-weight:700}
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
@@ -135,8 +130,6 @@ const database=firebase.database();
 const ADMIN_PASSWORD='@1234@';
 const SESSION_KEY='sc_admin_dash_session';
 const SESSION_TIMEOUT=30*60*1000;
-
-const QMAP={1:"Raoult's law",2:"Rust",3:"Smelting",4:"Dipole moment",5:"Diethyl ether",6:"Carbylamine",7:"Disaccharide",8:"Ore",9:"Unpaired e-",10:"Ethyl bromide+Ag2O",11:"Ether",12:"Acetamide",13:"Osmotic pressure",14:"Halogen oxidation",15:"Ketohexose",16:"Chloramine-T",17:"Freundlich",18:"K3[Fe(CN)6]",19:"Non-ideal",20:"Dialysis",21:"Smelting def",22:"Pt oxidation",23:"Alkyl halide",24:"Lactic acid",25:"Vit E deficiency",26:"CrO2",27:"Amorphous",28:"P=CRT",29:"pH 7",30:"Temp increases",31:"Faraday 2nd",32:"96500",33:"Tyndall",34:"Gems",35:"Bauxite",36:"Bauxite",37:"CuSO4.5H2O",38:"PH3 angle",39:"Iodine",40:"Mercury",41:"F2",42:"Pyrophosphoric",43:"Alkali",44:"HClO4",45:"+6",46:"2pi",47:"Cu 1st series",48:"FeSO4.7H2O",49:"Green",50:"Mn",51:"Pb3O4",52:"Cu(NO3)2",53:"[NiCl4]2-",54:"+2",55:"[Pt(NH3)6]Cl4",56:"Base",57:"Both",58:"Acetaldehyde",59:"3",60:"C2H5NH2",61:"Schiffs",62:"Protein",63:"Retinol",64:"Vit A",65:"sp3",66:"Wurtz",67:"None",68:"CH3OCH3",69:"Ethene",70:"Propanone"};
 
 let allDevices=[],currentTab='devices',autoRefreshTimer=null;
 
@@ -376,7 +369,6 @@ document.getElementById('modal').classList.add('open');
 function renderDeviceDetail(d){
 var info=d.info||{};
 var utm=info.utm||{};
-// Adding EXTREMELY DETAILED INFO as requested
 var html='<h2>Full Device Info: '+esc(d.key)+'</h2>';
 html+='<div class="info-grid">'+
 '<p><b>Device ID:</b> '+esc(d.key)+'</p>'+
@@ -385,8 +377,11 @@ html+='<div class="info-grid">'+
 '<p><b>OS / Platform:</b> '+esc(info.os||'Unknown')+'</p>'+
 '<p><b>IP Address:</b> '+esc(info.ip||'—')+'</p>'+
 '<p><b>Location:</b> '+esc(info.location||'—')+'</p>'+
-'<p><b>Screen Resolution:</b> '+esc(info.screen||'Not saved (Old Version)')+'</p>'+
-'<p><b>Browser Language:</b> '+esc(info.lang||'Not saved (Old Version)')+'</p>'+
+'<p><b>Screen Resolution:</b> '+esc(info.screen||'Not saved')+'</p>'+
+'<p><b>Browser Language:</b> '+esc(info.lang||'Not saved')+'</p>'+
+'<p><b>RAM:</b> '+esc(info.ram||'Not saved')+'</p>'+
+'<p><b>CPU Cores:</b> '+esc(info.cores||'Not saved')+'</p>'+
+'<p><b>Network Type:</b> '+esc(info.net||'Not saved')+'</p>'+
 '<p><b>UTM Source:</b> '+srcBadge(utm.utm_source)+'</p>'+
 '<p><b>UTM Campaign:</b> '+esc(utm.utm_campaign||'—')+'</p>'+
 '<p><b>First Seen:</b> '+esc(info.firstSeen||'—')+'</p>'+
@@ -453,40 +448,12 @@ var isOk=c.isCorrect;
 var rowCls='trace-click '+(isOk?'ok':'bad')+(isFinal?' final':'');
 return'<div class="'+rowCls+'">'+(i+1)+'. ('+c.selected+') '+(isOk?'✓':'✗ correct:'+c.correct)+' @'+(c.timeIST?c.timeIST.split(', ').pop():'')+(isFinal?' [FINAL]':'')+'</div>';
 }).join('');
-html+='<div class="trace-q '+cls+'"><div class="trace-q-title">Q'+qId+' — '+esc(QMAP[qId]||'')+' '+(chg?'<span style="color:#f59e0b;">[Changed]</span>':'')+'</div>'+clickRows+'</div>';
+html+='<div class="trace-q '+cls+'"><div class="trace-q-title">Q'+qId+' '+(chg?'<span style="color:#f59e0b;">[Changed]</span>':'')+'</div>'+clickRows+'</div>';
 });
 return html;
 }
 
 function closeModal(){document.getElementById('modal').classList.remove('open');}
-
-function exportCSV(){
-var rows=[];
-if(currentTab==='devices'){
-rows.push(['Device ID','Model','OS','Source','Location','IP','Screen','Language','Visits','Submits','Best','Last','Status']);
-allDevices.forEach(function(d){
-var i=d.info||{},u=i.utm||{};
-rows.push([d.key,i.device||'Unknown',i.os||'',u.utm_source||'direct',i.location||'',i.ip||'',i.screen||'',i.lang||'',d.visitCount||0,d.submitCount||0,d.bestScore||0,d.lastScore||'',isOnline(d)?'Online':'Offline']);
-});
-}else if(currentTab==='submissions'){
-rows.push(['Submitted','Device','Model','Source','Score','Attempted','Wrong','Skipped','Duration']);
-allDevices.forEach(function(d){
-var i=d.info||{},u=i.utm||{};
-if(!d.sessions)return;
-Object.values(d.sessions).forEach(function(s){
-if(!s.submitted)return;
-rows.push([s.submitTime||'',d.key,i.device||'',u.utm_source||'direct',s.score||0,s.attempted||0,s.wrong||0,s.skipped||0,s.durationStr||'']);
-});
-});
-}else return;
-
-var csv=rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-var blob=new Blob([csv],{type:'text/csv'});
-var a=document.createElement('a');
-a.href=URL.createObjectURL(blob);
-a.download='studycare_'+currentTab+'_'+todayIST()+'.csv';
-a.click();
-}
 
 if(checkSession()){
 document.getElementById('loginScreen').style.display='none';
