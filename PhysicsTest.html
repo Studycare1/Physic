@@ -4,90 +4,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physics Pro - StudyCare</title>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <style>
-        :root { 
-            --primary: #6366f1; 
-            --primary-hover: #4f46e5;
-            --secondary: #1e293b; 
-            --correct: #10b981; 
-            --incorrect: #ef4444; 
-            --skipped: #94a3b8; 
-            --bg: #f8fafc; 
-            --card-bg: rgba(255, 255, 255, 0.95); 
+        :root {
+            --primary: #6366f1; --primary-hover: #4f46e5;
+            --secondary: #1e293b; --correct: #10b981;
+            --incorrect: #ef4444; --skipped: #94a3b8;
+            --bg: #f8fafc; --card-bg: rgba(255, 255, 255, 0.95);
             --glass-border: rgba(255, 255, 255, 0.2);
         }
         * { box-sizing: border-box; }
-        body { 
-            font-family: 'Outfit', sans-serif; 
+        body {
+            font-family: 'Outfit', sans-serif;
             background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
             background-attachment: fixed;
-            color: #334155; 
-            line-height: 1.6; 
-            margin: 0; 
-            padding: 20px; 
+            color: #334155; line-height: 1.6; margin: 0; padding: 20px;
         }
-        .container { 
-            max-width: 1100px; 
-            margin: 0 auto; 
-            background: var(--card-bg); 
-            padding: 40px; 
-            border-radius: 20px; 
+        .container {
+            max-width: 1100px; margin: 0 auto; background: var(--card-bg);
+            padding: 40px; border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.05);
             border: 1px solid var(--glass-border);
             backdrop-filter: blur(10px);
             animation: fadeIn 0.8s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-        
+
         .header { text-align: center; margin-bottom: 40px; }
         h1 { font-weight: 700; font-size: 2.2rem; background: linear-gradient(90deg, #1e293b, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
         h2, h3 { text-align: center; color: var(--secondary); font-weight: 600; }
         .header-info { font-weight: 500; color: #64748b; font-size: 1.1rem; }
 
-        .question-card { 
-            background: white; 
-            border: 1px solid #e2e8f0; 
-            border-radius: 16px; 
-            padding: 20px 25px; 
-            margin-bottom: 25px; 
+        .question-card {
+            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
+            padding: 20px 25px; margin-bottom: 25px;
             transition: transform 0.2s ease, box-shadow 0.2s ease;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
         }
         .question-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
         .question-text { font-weight: 600; margin-bottom: 20px; font-size: 1.1rem; color: #1e293b; }
-        
+
         .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         @media (max-width: 600px) { .options { grid-template-columns: 1fr; } }
-        
-        .option-btn { 
-            display: flex; align-items: center; cursor: pointer; padding: 12px 18px; 
-            border-radius: 12px; border: 2px solid #e2e8f0; background: #f8fafc; 
-            font-size: 15px; font-weight: 500; transition: all 0.2s ease; 
+
+        .option-btn {
+            display: flex; align-items: center; cursor: pointer; padding: 12px 18px;
+            border-radius: 12px; border: 2px solid #e2e8f0; background: #f8fafc;
+            font-size: 15px; font-weight: 500; transition: all 0.2s ease;
         }
         .option-btn:hover { border-color: var(--primary); background: #eef2ff; }
-        
-        /* Naya class sirf selection ke liye */
         .option-btn.selected-ans { background-color: #e0e7ff !important; border-color: var(--primary); color: #3730a3; font-weight: 700; }
-        
-        /* Ye classes sirf submit ke baad lagengi */
         .option-btn.correct-ans { background-color: #ecfdf5 !important; border-color: var(--correct); color: #065f46; font-weight: 700; }
         .option-btn.incorrect-ans { background-color: #fef2f2 !important; border-color: var(--incorrect); color: #991b1b; font-weight: 700; }
-        
+
         .reason-box { display: none; margin-top: 20px; padding: 15px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; font-size: 14px; color: #92400e; }
-        
-        .btn-container { display: flex; justify-content: center; margin: 40px 0; }
-        button { 
+
+        .btn-container { display: flex; justify-content: center; margin: 40px 0; gap: 12px; flex-wrap: wrap; }
+        button {
             padding: 15px 40px; font-size: 16px; font-weight: 700; font-family: 'Outfit';
             border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%); 
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
             color: white; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
         }
         button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5); }
         button:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
 
-        /* Results & Review */
         #results { display: none; text-align: center; margin-top: 30px; padding: 30px; background: white; border-radius: 16px; border: 2px solid #e2e8f0; }
         .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 700px; margin: 20px auto 0; }
         @media (max-width: 600px) { .result-grid { grid-template-columns: repeat(2, 1fr); } }
@@ -113,16 +94,15 @@
         .status-wrong { background: var(--incorrect); }
         .status-skipped { background: var(--skipped); }
 
-        /* Admin Panel */
         #admin-panel { display: none; margin-top: 40px; padding: 30px; background: #1e293b; border-radius: 16px; color: white; }
         #admin-panel h2 { color: #f8fafc; }
-        .admin-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 25px 0; }
-        @media (max-width: 600px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
+        .admin-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 25px 0; }
+        @media (max-width: 700px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
         .admin-stat { background: #334155; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #475569; }
-        .admin-stat .num { font-size: 28px; font-weight: 700; color: #818cf8; }
-        .admin-stat .lbl { font-size: 12px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
+        .admin-stat .num { font-size: 26px; font-weight: 700; color: #818cf8; }
+        .admin-stat .lbl { font-size: 11px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
         table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid #334155; }
+        th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #334155; }
         th { background-color: #0f172a; color: #cbd5e1; font-weight: 600; }
         .rank-row { cursor: pointer; transition: background 0.2s; }
         .rank-row:hover { background-color: #334155; }
@@ -131,7 +111,16 @@
         @media (max-width: 600px) { .device-info { grid-template-columns: 1fr; } }
         .device-info b { color: #818cf8; }
 
-        /* Modal & Section B */
+        .admin-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+        .admin-controls button { padding: 10px 22px; font-size: 14px; }
+        .conn-status { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .conn-online { background: #10b981; color: white; }
+        .conn-offline { background: #ef4444; color: white; }
+        .online-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+        .online-yes { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        .online-no { background: #64748b; }
+        #admin-last-update { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 10px; }
+
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
         .modal-content { background-color: #f8fafc; margin: auto; padding: 30px; border-radius: 16px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; position: relative; }
         .close-btn { color: #64748b; float: right; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1; }
@@ -191,15 +180,18 @@
 
     <div id="admin-panel">
         <h2>🔒 Secure Admin Dashboard</h2>
-        <div style="text-align:center;">
-            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:#475569; color:white; padding:8px 20px; font-size:14px; margin-bottom:20px;">Close Panel</button>
+        <div class="admin-controls">
+            <span id="fb-connection-status" class="conn-status conn-offline">⚫ Connecting…</span>
+            <button onclick="refreshAdmin(true)" style="background:#10b981; color:white;">🔄 Refresh Now</button>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:#475569; color:white;">Close Panel</button>
         </div>
-        
+
         <h3 style="text-align:left; font-size:16px; margin-top:20px;">Your Current Device Node:</h3>
         <div id="user-device-info" class="device-info"></div>
 
         <div class="admin-stats">
             <div class="admin-stat"><div class="num" id="adm-devices">0</div><div class="lbl">Total Devices</div></div>
+            <div class="admin-stat"><div class="num" id="adm-active">0</div><div class="lbl">Active (5 min)</div></div>
             <div class="admin-stat"><div class="num" id="adm-visits">0</div><div class="lbl">Total Visits</div></div>
             <div class="admin-stat"><div class="num" id="adm-submits">0</div><div class="lbl">Total Submits</div></div>
             <div class="admin-stat"><div class="num" id="adm-best">0</div><div class="lbl">Highest Score</div></div>
@@ -207,11 +199,12 @@
         <div style="overflow-x:auto;">
             <table>
                 <thead>
-                    <tr><th>#</th><th>Device ID</th><th>Visits</th><th>Submits</th><th>Best</th><th>Last</th><th>Location</th><th>Last Seen (IST)</th></tr>
+                    <tr><th>#</th><th>Device ID</th><th>Live</th><th>Visits</th><th>Submits</th><th>Best</th><th>Last</th><th>Location</th><th>Last Seen (IST)</th></tr>
                 </thead>
                 <tbody id="admin-device-body"></tbody>
             </table>
         </div>
+        <div id="admin-last-update"></div>
     </div>
 
     <div id="section-b">
@@ -245,6 +238,7 @@
     };
     firebase.initializeApp(firebaseConfig);
     const database = firebase.database();
+    const DB_BASE = firebaseConfig.databaseURL;
 
     // ============================================================
     // HELPERS (IST TIME)
@@ -261,16 +255,29 @@
     }
 
     // ============================================================
-    // DEVICE ID & TRACKING
+    // ✅ FIX 1: DEVICE ID (unique per browser + cookie fallback)
     // ============================================================
     function getDeviceId() {
-        let id = localStorage.getItem('sc_phy_device_id');
+        let id = null;
+        try { id = localStorage.getItem('sc_phy_device_id'); } catch(e) {}
+        if (!id) { try { id = sessionStorage.getItem('sc_phy_device_id'); } catch(e) {} }
         if (!id) {
-            const fp = [navigator.userAgent, navigator.language, navigator.platform, navigator.hardwareConcurrency || 0, new Date().getTimezoneOffset(), screen.colorDepth, screen.width + 'x' + screen.height].join('|');
+            const m = document.cookie.match(/(?:^|;\s*)sc_phy_device_id=([^;]+)/);
+            if (m) id = decodeURIComponent(m[1]);
+        }
+        if (!id) {
+            const fp = [navigator.userAgent, navigator.language, navigator.platform,
+                navigator.hardwareConcurrency || 0, new Date().getTimezoneOffset(),
+                screen.colorDepth, screen.width + 'x' + screen.height].join('|');
             let hash = 0;
             for (let i = 0; i < fp.length; i++) hash = ((hash << 5) - hash + fp.charCodeAt(i)) | 0;
-            id = 'PHY_' + Math.abs(hash).toString(36).toUpperCase();
-            localStorage.setItem('sc_phy_device_id', id);
+            // ✅ random suffix => do alag phones ka ID merge nahi hoga
+            const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+            const ts = Date.now().toString(36).toUpperCase().slice(-4);
+            id = 'PHY_' + Math.abs(hash).toString(36).toUpperCase() + '_' + rand + ts;
+            try { localStorage.setItem('sc_phy_device_id', id); } catch(e) {}
+            try { sessionStorage.setItem('sc_phy_device_id', id); } catch(e) {}
+            try { document.cookie = 'sc_phy_device_id=' + encodeURIComponent(id) + '; max-age=31536000; path=/; SameSite=Lax'; } catch(e) {}
         }
         return id;
     }
@@ -281,65 +288,167 @@
     const infoRef    = deviceRef.child('info');
 
     // ============================================================
-    // STATE VARIABLES
+    // STATE
     // ============================================================
     const startTime = new Date();
     let isSubmitted = false;
     let score = 0;
     const attemptedQuestions = new Set();
-    const userAnswers = {};       
-    let userIP = "Fetching...", userLocation = "Unknown", deviceDetails = "Detecting...";
+    const userAnswers = {};
+    let userIP = "Pending", userLocation = "Unknown", deviceDetails = "Unknown Device";
     let adminListener = null, allDevicesCache = [];
+    let isFirebaseConnected = false;
+    let lastRestFallback = 0;
 
     // ============================================================
-    // IP & DEVICE INFO FETCH
+    // ✅ FIX 2: REST FALLBACK (Opera Mini / WebSocket-blocked networks)
+    //         Uses plain HTTPS PUT (bypasses WebSocket limits)
     // ============================================================
-    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
-        userIP = d.ip || "Hidden"; userLocation = `${d.city || 'Unknown'}, ${d.country_name || 'Unknown'}`;
+    function restFallback(pathSuffix, data) {
+        const now = Date.now();
+        if (now - lastRestFallback < 8000) return; // throttle
+        lastRestFallback = now;
+        const url = `${DB_BASE}/physics_devices/${deviceId}${pathSuffix}.json`;
+        fetch(url, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(() => console.log('✅ REST fallback OK'))
+          .catch(e => console.warn('REST fallback failed:', e));
+    }
+
+    // ============================================================
+    // ✅ FIX 3: updateDeviceMeta — call IMMEDIATELY + safe
+    // ============================================================
+    function updateDeviceMeta(extra = {}) {
+        const data = {
+            deviceId,
+            ip: userIP,
+            location: userLocation,
+            device: deviceDetails,
+            os: navigator.platform || 'Unknown',
+            ua: navigator.userAgent,
+            lastSeen: nowIST(),
+            lastSeenTs: Date.now(),
+            online: true,
+            ...extra
+        };
+        infoRef.update(data).catch(err => {
+            console.warn('SDK meta write failed → REST fallback', err);
+            restFallback('/info', data);
+        });
+        return data;
+    }
+
+    // ✅ Register device IMMEDIATELY on page load (before any async wait)
+    updateDeviceMeta();
+
+    // Visit count (with error callback)
+    deviceRef.child('visitCount').transaction(
+        v => (v || 0) + 1,
+        (err) => { if (err) console.warn('visitCount tx error:', err); }
+    );
+    deviceRef.child('info/firstSeen').transaction(v => v || nowIST());
+    deviceRef.child('info/online').onDisconnect().set(false);
+
+    // Session record
+    sessionRef.set({
+        sessionId, startTime: nowIST(), startTimestamp: Date.now(),
+        submitted: false, score: 0, attempted: 0
+    }).catch(err => {
+        console.warn('Session write failed → REST', err);
+        restFallback('/sessions/' + sessionId, { sessionId, startTime: nowIST(), startTimestamp: Date.now(), submitted: false, score: 0, attempted: 0 });
+    });
+
+    // ✅ Heartbeat: keeps lastSeen fresh even if initial write lost
+    setInterval(() => {
+        if (isSubmitted) return;
         updateDeviceMeta();
-    }).catch(() => { userIP = "Blocked"; });
+    }, 30000);
+
+    // ✅ Retry REST fallback once if SDK still disconnected after 8s
+    setTimeout(() => {
+        if (!isFirebaseConnected) {
+            console.log('Firebase SDK not connected → using REST fallback');
+            restFallback('/info', {
+                deviceId, ip: userIP, location: userLocation, device: deviceDetails,
+                os: navigator.platform || 'Unknown', ua: navigator.userAgent,
+                lastSeen: nowIST(), lastSeenTs: Date.now(), online: true,
+                source: 'rest_fallback'
+            });
+        }
+    }, 8000);
+
+    // ============================================================
+    // IP & DEVICE INFO (with timeouts, non-blocking)
+    // ============================================================
+    function withTimeout(promise, ms) {
+        return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
+    }
+
+    withTimeout(fetch('https://ipapi.co/json/').then(r => r.json()), 5000)
+        .then(d => {
+            userIP = d.ip || "Hidden";
+            userLocation = `${d.city || 'Unknown'}, ${d.country_name || 'Unknown'}`;
+            updateDeviceMeta();
+            renderDeviceInfoBox();
+        })
+        .catch(() => { userIP = "Blocked"; userLocation = "Unknown"; updateDeviceMeta(); });
 
     async function getDeviceInfo() {
         let info = [];
-        if (navigator.userAgentData) {
-            try {
-                const h = await navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]);
+        try {
+            if (navigator.userAgentData) {
+                const h = await withTimeout(
+                    navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]),
+                    3000
+                );
                 if (h.model) info.push(h.model);
                 if (h.platform) info.push(`${h.platform} ${h.platformVersion || ''}`.trim());
-                const b = navigator.userAgentData.brands.find(b => /Chrome|Edge/.test(b.brand));
+                const b = (navigator.userAgentData.brands || []).find(b => /Chrome|Edge/.test(b.brand));
                 if (b) info.push(b.brand);
-            } catch (e) {}
-        }
+            }
+        } catch (e) {}
         if (info.length === 0) {
             if (/Android/.test(navigator.userAgent)) info.push("Android");
             else if (/iPhone|iPad/.test(navigator.userAgent)) info.push("iOS");
             else if (/Windows/.test(navigator.userAgent)) info.push("Windows");
             else if (/Macintosh/.test(navigator.userAgent)) info.push("MacOS");
+            else info.push("Unknown Device");
         }
-        deviceDetails = info.join(" | ") || "Unknown Device";
-        renderDeviceInfoBox(); updateDeviceMeta();
+        deviceDetails = info.join(" | ");
+        renderDeviceInfoBox();
+        updateDeviceMeta();
     }
     getDeviceInfo();
+
+    // Firebase connection monitor (helps admin see if their side is live)
+    database.ref('.info/connected').on('value', snap => {
+        isFirebaseConnected = !!snap.val();
+        const el = document.getElementById('fb-connection-status');
+        if (el) {
+            if (isFirebaseConnected) {
+                el.className = 'conn-status conn-online';
+                el.textContent = '🟢 Firebase Connected';
+            } else {
+                el.className = 'conn-status conn-offline';
+                el.textContent = '🔴 Firebase Offline';
+            }
+        }
+    });
 
     function renderDeviceInfoBox() {
         document.getElementById('user-device-info').innerHTML = `
             <div><b>🌐 IP:</b> ${userIP} (${userLocation})</div>
             <div><b>📱 Device:</b> ${deviceDetails}</div>
             <div><b>🆔 Device ID:</b> ${deviceId}</div>
+            <div><b>🔗 Firebase:</b> ${isFirebaseConnected ? '🟢 Connected' : '🔴 Offline'}</div>
             <div><b>🕐 IST Time:</b> ${nowIST()}</div>
         `;
     }
-    function updateDeviceMeta() {
-        infoRef.update({ deviceId, ip: userIP, location: userLocation, device: deviceDetails, os: navigator.platform, ua: navigator.userAgent, lastSeen: nowIST() });
-    }
-
-    // Track Visit
-    deviceRef.child('visitCount').transaction(v => (v || 0) + 1);
-    deviceRef.child('info/firstSeen').transaction(v => v || nowIST());
-    sessionRef.set({ sessionId, startTime: nowIST(), startTimestamp: Date.now(), submitted: false, score: 0, attempted: 0 });
 
     // ============================================================
-    // 70 PHYSICS MCQs (BSEB 12th)
+    // 70 MCQs
     // ============================================================
     const mcqData = [
         { id: 1, q: "The SI unit of electric flux is:", options: { A: "N C⁻¹", B: "V m⁻¹", C: "N m² C⁻¹", D: "C m⁻²" }, ans: "C", reason: "Flux = E.A = (N/C) * m² = N m² C⁻¹." },
@@ -452,7 +561,6 @@
         card.className = 'question-card';
         let opts = '';
         for (const [k, v] of Object.entries(item.options)) {
-            // Yahan checkAnswer ki jagah selectOption call hoga
             opts += `<div class="option-btn" id="opt-${item.id}-${k}" onclick="selectOption(${item.id}, '${k}', '${item.ans}')"><strong>(${k})</strong>&nbsp; ${v}</div>`;
         }
         card.innerHTML = `<div class="question-text">Q${item.id}. ${item.q}</div><div class="options">${opts}</div><div class="reason-box" id="reason-${item.id}"><strong>Solution:</strong> ${item.reason}</div>`;
@@ -473,35 +581,29 @@
     });
 
     // ============================================================
-    // LOGIC & FIREBASE INTEGRATION
+    // TEST LOGIC
     // ============================================================
     function selectOption(qId, selectedOpt, correctOpt) {
         if (isSubmitted) return;
-
-        // Agar pehle se koi option select kiya hai to usko hatayein
         if (userAnswers[qId]) {
             document.getElementById(`opt-${qId}-${userAnswers[qId]}`).classList.remove('selected-ans');
         } else {
             attemptedQuestions.add(qId);
         }
-
         userAnswers[qId] = selectedOpt;
         document.getElementById(`opt-${qId}-${selectedOpt}`).classList.add('selected-ans');
 
-        // Log the click to Firebase (admin can see)
         const isCorrect = selectedOpt === correctOpt;
         const log = { qId, selected: selectedOpt, correct: correctOpt, isCorrect, timeIST: nowIST(), ts: Date.now() };
-        sessionRef.child('clicks').push(log);
-        sessionRef.update({ attempted: attemptedQuestions.size });
+        sessionRef.child('clicks').push(log).catch(() => {});
+        sessionRef.update({ attempted: attemptedQuestions.size }).catch(() => {});
     }
 
     function submitTest() {
         if (isSubmitted) return;
         isSubmitted = true;
-        
+
         let correctCount = 0;
-        
-        // Evaluate all answers at once on submit
         mcqData.forEach(item => {
             const userAns = userAnswers[item.id];
             const selEl = userAns ? document.getElementById(`opt-${item.id}-${userAns}`) : null;
@@ -519,37 +621,35 @@
                     corEl.classList.add('correct-ans');
                 }
             } else {
-                corEl.classList.add('correct-ans'); // Show correct answer for skipped
+                corEl.classList.add('correct-ans');
             }
-            reasonEl.style.display = 'block'; // Show reasons only after submit
+            reasonEl.style.display = 'block';
         });
-        
+
         score = correctCount;
         lockTest();
 
-        const totalQ     = mcqData.length;
-        const attempted  = attemptedQuestions.size;
-        const wrong      = attempted - score;
-        const skipped    = totalQ - attempted;
+        const totalQ      = mcqData.length;
+        const attempted   = attemptedQuestions.size;
+        const wrong       = attempted - score;
+        const skipped     = totalQ - attempted;
         const durationSec = Math.round((Date.now() - startTime) / 1000);
 
         sessionRef.update({
             submitted: true, submitTime: nowIST(), submitTimestamp: Date.now(),
             durationSeconds: durationSec, durationStr: durationStr(durationSec),
             score: score, attempted, wrong, skipped
-        });
+        }).catch(() => {});
         deviceRef.child('submitCount').transaction(v => (v || 0) + 1);
         deviceRef.child('bestScore').transaction(v => Math.max(v || 0, score));
         deviceRef.child('lastScore').set(score);
-        deviceRef.child('scoreHistory').push({ score: score, total: totalQ, time: nowIST() });
+        deviceRef.child('scoreHistory').push({ score, total: totalQ, time: nowIST() });
 
-        // Update result UI
         document.getElementById('attempted-display').innerText = attempted;
         document.getElementById('score-display').innerText = score;
         document.getElementById('wrong-display').innerText = wrong;
         document.getElementById('skipped-display').innerText = skipped;
         document.getElementById('marks-display').innerText = score;
-        
         document.getElementById('time-item').style.display = '';
         document.getElementById('time-display').innerText = durationStr(durationSec);
         document.getElementById('results').style.display = 'block';
@@ -604,7 +704,9 @@
         document.getElementById('answer-review').scrollIntoView({ behavior: 'smooth' });
     }
 
-    // 4-Click Admin Logic
+    // ============================================================
+    // ADMIN ACCESS (4 clicks OR #admin URL OR ?admin=1)
+    // ============================================================
     let clickCount = 0, clickTimer = null;
     document.getElementById('submit-btn').addEventListener('click', function () {
         clickCount++;
@@ -612,7 +714,7 @@
             clickTimer = setTimeout(() => {
                 clickCount = 0;
                 if (!isSubmitted) submitTest();
-            }, 2000); // 2 seconds
+            }, 2000);
         }
         if (clickCount >= 4) {
             clearTimeout(clickTimer);
@@ -621,41 +723,86 @@
         }
     });
 
+    // ✅ FIX 4: Admin access via #admin hash (works even after submit)
+    if (location.hash === '#admin' || location.search.includes('admin=1')) {
+        setTimeout(adminAccess, 600);
+    }
+    window.addEventListener('hashchange', () => {
+        if (location.hash === '#admin') adminAccess();
+    });
+
     function adminAccess() {
         document.getElementById('admin-panel').style.display = 'block';
         document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+        refreshAdmin(false);
+        renderDeviceInfoBox();
+    }
 
-        if (adminListener) database.ref('physics_devices').off('value', adminListener);
-        adminListener = database.ref('physics_devices').on('value', snapshot => {
+    // ✅ FIX 5: Robust refresh — off + re-on forces a fresh read
+    function refreshAdmin(force) {
+        if (adminListener) {
+            try { database.ref('physics_devices').off('value', adminListener); } catch(e) {}
+        }
+        const cb = snapshot => {
             allDevicesCache = [];
             snapshot.forEach(child => allDevicesCache.push({ key: child.key, ...child.val() }));
             renderAdminTable();
+            document.getElementById('admin-last-update').textContent = '🕐 Last refreshed: ' + nowIST();
+        };
+        adminListener = database.ref('physics_devices').on('value', cb, err => {
+            console.warn('Admin listener error:', err);
+            document.getElementById('admin-last-update').textContent = '⚠️ Read error: ' + (err.message || err);
         });
+        if (force) {
+            database.ref('physics_devices').once('value').then(snap => {
+                allDevicesCache = [];
+                snap.forEach(child => allDevicesCache.push({ key: child.key, ...child.val() }));
+                renderAdminTable();
+                document.getElementById('admin-last-update').textContent = '🕐 Refreshed at: ' + nowIST();
+            }).catch(e => console.warn('once failed:', e));
+        }
+    }
+
+    function isDeviceOnline(d) {
+        return d.info && d.info.online && (Date.now() - (d.info.lastSeenTs || 0) < 5 * 60 * 1000);
     }
 
     function renderAdminTable() {
-        let totalVisits = 0, totalSubmits = 0, bestScore = 0;
+        let totalVisits = 0, totalSubmits = 0, bestScore = 0, activeCount = 0;
         allDevicesCache.forEach(d => {
             totalVisits += d.visitCount || 0;
             totalSubmits += d.submitCount || 0;
             bestScore = Math.max(bestScore, d.bestScore || 0);
+            if (isDeviceOnline(d)) activeCount++;
         });
         document.getElementById('adm-devices').innerText = allDevicesCache.length;
+        document.getElementById('adm-active').innerText = activeCount;
         document.getElementById('adm-visits').innerText = totalVisits;
         document.getElementById('adm-submits').innerText = totalSubmits;
         document.getElementById('adm-best').innerText = bestScore;
 
-        const sorted = [...allDevicesCache].sort((a, b) => (b.submitCount || 0) - (a.submitCount || 0));
+        // Sort: online first, then by submitCount
+        const sorted = [...allDevicesCache].sort((a, b) => {
+            const aOn = isDeviceOnline(a) ? 1 : 0, bOn = isDeviceOnline(b) ? 1 : 0;
+            if (bOn !== aOn) return bOn - aOn;
+            return (b.submitCount || 0) - (a.submitCount || 0);
+        });
         const tbody = document.getElementById('admin-device-body');
         tbody.innerHTML = '';
+        if (sorted.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" style="color:#94a3b8; padding:30px;">No devices yet. Share the page to see data here.</td></tr>';
+            return;
+        }
         sorted.forEach((d, i) => {
             const tr = document.createElement('tr');
             tr.className = 'rank-row';
             if (d.key === deviceId) tr.classList.add('is-current');
             tr.onclick = () => openDeviceModal(d);
+            const online = isDeviceOnline(d);
             tr.innerHTML = `
                 <td>${i + 1}</td>
                 <td><code>${d.key}</code></td>
+                <td><span class="online-dot ${online ? 'online-yes' : 'online-no'}"></span>${online ? 'Live' : '—'}</td>
                 <td>${d.visitCount || 0}</td>
                 <td>${d.submitCount || 0}</td>
                 <td>${d.bestScore || 0}</td>
@@ -707,6 +854,7 @@
                 <p><b>Last Score:</b> ${device.lastScore !== undefined ? device.lastScore + '/70' : '-'}</p>
                 <p><b>First Seen:</b> ${info.firstSeen || '-'}</p>
                 <p><b>Last Seen:</b> ${info.lastSeen || '-'}</p>
+                <p><b>Status:</b> ${isDeviceOnline(device) ? '🟢 Online' : '⚪ Offline'}</p>
                 <p><b>IP:</b> ${info.ip || 'N/A'}</p>
                 <p><b>Location:</b> ${info.location || 'N/A'}</p>
                 <p><b>Device:</b> ${info.device || 'N/A'}</p>
@@ -725,6 +873,14 @@
     window.onclick = e => {
         if (e.target === document.getElementById('userModal')) closeModal();
     };
+
+    // Best-effort cleanup on page close
+    window.addEventListener('beforeunload', () => {
+        try {
+            const url = `${DB_BASE}/physics_devices/${deviceId}/info/online.json`;
+            navigator.sendBeacon && navigator.sendBeacon(url, JSON.stringify(false));
+        } catch(e) {}
+    });
 </script>
 </body>
-  </html>
+</html>
