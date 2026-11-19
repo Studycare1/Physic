@@ -1,8 +1,9 @@
-const CACHE_NAME = 'physics-v2';
+const CACHE_NAME = 'physics-v3';
 const ASSETS = [
   './',
-  './index.html',
+  './PhysicsTest.html',
   './admin.html',
+  './logo.svg',
   'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
   'https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js'
 ];

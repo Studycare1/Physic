@@ -1,7 +1,7 @@
 {
   "name": "StudyCare Physics Test",
   "short_name": "Physics",
-  "start_url": "./index.html",
+  "start_url": "./PhysicsTest.html",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#6366f1",
