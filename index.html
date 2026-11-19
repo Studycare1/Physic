@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemistry Model Paper - StudyCare</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --primary: #2c3e50; --secondary: #34495e; --correct: #2ecc71; --incorrect: #e74c3c; --skipped: #95a5a6; --bg: #f4f7f6; --card-bg: #ffffff; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: #333; line-height: 1.6; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; background: var(--card-bg); padding: 30px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h1, h2, h3 { text-align: center; color: var(--primary); }
+        .header-info { text-align: center; font-weight: bold; margin-bottom: 20px; color: var(--secondary); }
+        .question-card { background: #fafafa; border: 1px solid #ddd; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; }
+        .question-text { font-weight: 600; margin-bottom: 15px; font-size: 16px; }
+        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 600px) { .options { grid-template-columns: 1fr; } }
+        .option-btn { display: flex; align-items: center; cursor: pointer; padding: 10px 15px; border-radius: 5px; border: 1px solid #ccc; background: white; font-size: 15px; transition: all 0.2s; }
+        .option-btn:hover { background: #e9ecef; }
+        .option-btn.selected-ans { background-color: #e0e7ff !important; border: 2px solid #6366f1; color: #3730a3; font-weight: bold; }
+        .option-btn.correct-ans { background-color: #d4edda !important; border: 2px solid var(--correct); color: #155724; font-weight: bold; }
+        .option-btn.incorrect-ans { background-color: #f8d7da !important; border: 2px solid var(--incorrect); color: #721c24; font-weight: bold; }
+        .reason-box { display: none; margin-top: 15px; padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px; font-size: 14px; color: #856404; }
+        .btn-container { display: flex; justify-content: center; gap: 20px; margin-top: 30px; margin-bottom: 20px; flex-wrap: wrap; }
+        button { padding: 12px 25px; font-size: 16px; font-weight: bold; border: none; border-radius: 5px; cursor: pointer; }
+        .btn-submit { background-color: var(--primary); color: white; }
+        .btn-submit:disabled { background-color: #95a5a6; cursor: not-allowed; }
+        #results { text-align: center; margin-top: 20px; padding: 20px; background: #e8f4f8; border-radius: 8px; border-left: 5px solid var(--primary); }
+        .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 650px; margin: 15px auto 0; }
+        @media (max-width: 600px) { .result-grid { grid-template-columns: repeat(2, 1fr); } }
+        .rg-item { background: white; padding: 10px; border-radius: 6px; }
+        .rg-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
+        .rg-value { font-size: 22px; font-weight: bold; color: var(--primary); }
+        .rg-item.highlight { background: var(--primary); }
+        .rg-item.highlight .rg-label { color: #bdc3c7; }
+        .rg-item.highlight .rg-value { color: white; }
+        #answer-review { display: none; margin-top: 30px; padding: 20px; background: #fdfdfd; border-radius: 8px; border: 2px solid var(--primary); }
+        .review-card { background: white; border-radius: 8px; padding: 15px; margin-bottom: 15px; border-left: 5px solid #ccc; }
+        .review-card.correct { border-left-color: var(--correct); }
+        .review-card.wrong { border-left-color: var(--incorrect); }
+        .review-card.skipped { border-left-color: var(--skipped); }
+        .review-q { font-weight: bold; margin-bottom: 10px; }
+        .review-opt { padding: 8px 12px; margin: 5px 0; border-radius: 5px; font-size: 14px; background: #f5f5f5; }
+        .review-opt.user-wrong { background: #f8d7da; border: 1px solid var(--incorrect); }
+        .review-opt.correct-answer { background: #d4edda; border: 2px solid var(--correct); font-weight: bold; }
+        .review-reason { margin-top: 10px; padding: 10px; background: #fff3cd; border-left: 3px solid #ffc107; font-size: 13px; border-radius: 4px; }
+        .status-badge { display: inline-block; padding: 3px 12px; border-radius: 12px; font-size: 12px; font-weight: bold; color: white; margin-left: 8px; }
+        .status-correct { background: var(--correct); }
+        .status-wrong { background: var(--incorrect); }
+        .status-skipped { background: var(--skipped); }
+        #admin-panel { display: none; margin-top: 30px; padding: 20px; background: #fff; border-radius: 8px; border: 2px solid #e74c3c; }
+        #admin-panel h2 { color: #e74c3c; }
+        .admin-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
+        .admin-controls button { padding: 8px 18px; font-size: 14px; }
+        .conn-status { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
+        .conn-online { background: #10b981; color: white; }
+        .conn-offline { background: #ef4444; color: white; }
+        .admin-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 20px 0; }
+        @media (max-width: 700px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
+        .admin-stat { background: #ecf0f1; padding: 15px; border-radius: 8px; text-align: center; }
+        .admin-stat .num { font-size: 24px; font-weight: bold; color: var(--primary); }
+        .admin-stat .lbl { font-size: 11px; color: #666; text-transform: uppercase; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; font-size: 12px; }
+        th, td { padding: 8px; text-align: center; border-bottom: 1px solid #ddd; }
+        th { background-color: var(--primary); color: white; }
+        .rank-row { cursor: pointer; }
+        .rank-row:hover { background-color: #e2e8f0 !important; }
+        .rank-row.is-current { background-color: #d4edda; }
+        .online-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+        .online-yes { background: #10b981; box-shadow: 0 0 6px #10b981; }
+        .online-no { background: #64748b; }
+        #admin-last-update { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 10px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); align-items: center; justify-content: center; }
+        .modal-content { background-color: #fefefe; margin: auto; padding: 20px; border: 1px solid #888; width: 90%; max-width: 800px; border-radius: 10px; position: relative; max-height: 88vh; overflow-y: auto; }
+        .close-btn { color: #aaa; float: right; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .close-btn:hover { color: black; }
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 15px; margin-bottom: 15px; }
+        @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
+        .info-grid p { margin: 4px 0; font-size: 14px; }
+        .info-grid b { color: var(--primary); }
+        .session-card { background: white; border-left: 4px solid var(--secondary); padding: 12px; margin: 12px 0; border-radius: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .session-card h4 { margin: 0 0 10px 0; color: var(--primary); font-size: 14px; }
+        .session-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; font-size: 12px; margin-bottom: 10px; }
+        .session-details div { background: #f0f3f5; padding: 6px 8px; border-radius: 3px; }
+        .session-details b { color: var(--secondary); }
+        .trace-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin: 15px 0; }
+        @media (max-width: 700px) { .trace-stats { grid-template-columns: repeat(3, 1fr); } }
+        .trace-stat { background: #f0f3f5; padding: 10px 6px; border-radius: 6px; text-align: center; border-top: 3px solid var(--primary); }
+        .trace-stat.warn { background: #fff3cd; border-top-color: #f39c12; }
+        .trace-stat.danger { background: #f8d7da; border-top-color: var(--incorrect); }
+        .trace-stat.info { background: #d1ecf1; border-top-color: #17a2b8; }
+        .trace-stat-num { font-size: 20px; font-weight: 700; color: var(--primary); }
+        .trace-stat-lbl { font-size: 10px; color: #666; text-transform: uppercase; margin-top: 2px; }
+        .trace-filter { display: flex; align-items: center; gap: 8px; margin: 10px 0; padding: 8px 12px; background: #e8f4f8; border-radius: 6px; font-size: 13px; }
+        .question-trace { background: white; border-radius: 8px; padding: 10px 12px; margin: 10px 0; border-left: 4px solid #ccc; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .question-trace.normal { border-left-color: var(--correct); }
+        .question-trace.changed { border-left-color: #f39c12; background: #fffdf5; }
+        .question-trace.confused { border-left-color: var(--incorrect); background: #fff5f5; }
+        .question-trace.returned { border-left-color: #17a2b8; }
+        .trace-header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; }
+        .trace-qid { font-weight: 700; color: var(--primary); font-size: 13px; }
+        .trace-badge { font-size: 10px; padding: 3px 10px; border-radius: 10px; font-weight: 700; color: white; }
+        .trace-badge.normal { background: var(--correct); }
+        .trace-badge.changed { background: #f39c12; }
+        .trace-badge.confused { background: var(--incorrect); }
+        .trace-badge.returned { background: #17a2b8; }
+        .trace-qtext { width: 100%; font-size: 11px; color: #666; margin: 4px 0 6px 0; font-style: italic; }
+        .trace-clicks { background: #f8f9fa; border-radius: 4px; padding: 6px; }
+        .trace-click-row { display: flex; gap: 8px; align-items: center; padding: 5px 8px; font-size: 11px; font-family: 'Courier New', monospace; border-bottom: 1px dashed #e2e8f0; flex-wrap: wrap; }
+        .trace-click-row:last-child { border-bottom: none; }
+        .trace-click-row.wrong { color: #c0392b; }
+        .trace-click-row.correct { color: #27ae60; }
+        .trace-click-row.final { background: #fff3cd; font-weight: 700; border-radius: 3px; margin-top: 2px; }
+        .tc-idx { font-weight: 700; min-width: 18px; color: var(--primary); }
+        .tc-opt { min-width: 45px; font-weight: 600; }
+        .tc-result { min-width: 100px; }
+        .tc-time { color: #888; font-size: 10px; }
+        .tc-return { color: #17a2b8; font-size: 10px; background: #d1ecf1; padding: 1px 6px; border-radius: 8px; }
+        .tc-repeat { color: #f39c12; font-size: 10px; font-style: italic; }
+        .tc-final { color: #e67e22; font-weight: 700; font-size: 10px; background: #fff3cd; padding: 1px 6px; border-radius: 8px; margin-left: auto; }
+        .trace-note { margin-top: 6px; font-size: 11px; color: #856404; background: #fff3cd; padding: 5px 10px; border-radius: 4px; border-left: 3px solid #f39c12; }
+        #section-b { margin-top: 40px; border-top: 2px dashed #ccc; padding-top: 20px; }
+        .ans-card { background: #fdfdfd; border-left: 5px solid var(--secondary); padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .ans-text { color: #444; margin-top: 10px; white-space: pre-wrap; font-size: 15px; }
+        .device-info { font-size: 13px; color: #333; margin-top: 10px; background: #e8f4f8; padding: 15px; border-radius: 5px; border: 1px solid #bce8f1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        @media (max-width: 600px) { .device-info { grid-template-columns: 1fr; } }
+        .device-info b { color: var(--primary); }
+    </style>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
+<body>
+<div class="container">
+    <h1>CHEMISTRY MODEL PAPER - 1</h1>
+    <div class="header-info">Time: 3 Hours + 15 Minutes | Total Marks: 70</div>
+    <h2>SECTION - A : Objective Type Questions</h2>
+    <div id="mcq-container"></div>
+    <div id="results" style="display:none;">
+        <h3 style="margin-top:0;">📊 Your Score</h3>
+        <div class="result-grid">
+            <div class="rg-item"><div class="rg-label">Attempted</div><div class="rg-value"><span id="attempted-display">0</span>/70</div></div>
+            <div class="rg-item"><div class="rg-label">Correct</div><div class="rg-value" style="color:var(--correct);" id="score-display">0</div></div>
+            <div class="rg-item"><div class="rg-label">Wrong</div><div class="rg-value" style="color:var(--incorrect);" id="wrong-display">0</div></div>
+            <div class="rg-item"><div class="rg-label">Skipped</div><div class="rg-value" id="skipped-display">70</div></div>
+            <div class="rg-item highlight"><div class="rg-label">Marks Obtained</div><div class="rg-value"><span id="marks-display">0</span>/70</div></div>
+            <div class="rg-item" id="time-item" style="display:none;"><div class="rg-label">Time Taken</div><div class="rg-value" id="time-display" style="font-size:16px;">-</div></div>
+        </div>
+    </div>
+    <div class="btn-container">
+        <button type="button" id="submit-btn" class="btn-submit">Finish Test</button>
+    </div>
+    <div id="answer-review">
+        <h2>📋 Answer Review Sheet</h2>
+        <p style="text-align:center; color:#666; margin-top:-10px;">Detailed analysis of all 70 questions</p>
+        <div id="review-list"></div>
+    </div>
+    <div id="admin-panel">
+        <h2>🔒 Admin Dashboard</h2>
+        <div class="admin-controls">
+            <span id="fb-connection-status" class="conn-status conn-offline">⚫ Connecting…</span>
+            <button onclick="refreshAdmin(true)" style="background:#2ecc71; color:white;">🔄 Refresh Now</button>
+            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:#95a5a6; color:white;">Close Admin</button>
+        </div>
+        <h3 style="text-align:left; font-size:16px; margin-top:20px;">Your Current Device Info:</h3>
+        <div id="user-device-info" class="device-info"></div>
+        <div class="admin-stats">
+            <div class="admin-stat"><div class="num" id="adm-devices">0</div><div class="lbl">Total Devices</div></div>
+            <div class="admin-stat"><div class="num" id="adm-active">0</div><div class="lbl">Active (5m)</div></div>
+            <div class="admin-stat"><div class="num" id="adm-visits">0</div><div class="lbl">Total Visits</div></div>
+            <div class="admin-stat"><div class="num" id="adm-submits">0</div><div class="lbl">Total Submits</div></div>
+            <div class="admin-stat"><div class="num" id="adm-best">0</div><div class="lbl">Highest Score</div></div>
+        </div>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead><tr><th>#</th><th>Device ID</th><th>Live</th><th>Visits</th><th>Submits</th><th>Best</th><th>Last</th><th>Clicks</th><th>Location</th><th>Last Seen (IST)</th></tr></thead>
+                <tbody id="admin-device-body"></tbody>
+            </table>
+        </div>
+        <div id="admin-last-update"></div>
+    </div>
+    <div id="section-b">
+        <h2>SECTION - B : Non-Objective Type Questions</h2>
+        <div id="short-ans-container"><h3>Short Answer Type Questions</h3></div>
+        <div id="long-ans-container"><h3>Long Answer Type Questions</h3></div>
+    </div>
+</div>
+<div id="userModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <h2 id="modal-title">Device Details</h2>
+        <div id="modal-body" class="modal-body-content"></div>
+    </div>
+</div>
+<script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyB6P7OJz58DEMvtQqe49EArG1TMoE4l0yk",
+        authDomain: "studycare-chemistry.firebaseapp.com",
+        databaseURL: "https://studycare-chemistry-default-rtdb.firebaseio.com",
+        projectId: "studycare-chemistry",
+        storageBucket: "studycare-chemistry.firebasestorage.app",
+        messagingSenderId: "693936311195",
+        appId: "1:693936311195:web:648b62c1f17b3872ffef3e"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const database = firebase.database();
+    const DB_BASE = firebaseConfig.databaseURL;
+
+    function nowIST() {
+        return new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+    }
+    function durationStr(sec) { const m = Math.floor(sec / 60), s = sec % 60; return m + 'm ' + s + 's'; }
+    function withTimeout(p, ms) { return Promise.race([p, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]); }
+
+    function getDeviceId() {
+        let id = null;
+        try { id = localStorage.getItem('sc_chem_device_id'); } catch(e) {}
+        if (!id) { try { id = sessionStorage.getItem('sc_chem_device_id'); } catch(e) {} }
+        if (!id) { const m = document.cookie.match(/(?:^|;\s*)sc_chem_device_id=([^;]+)/); if (m) id = decodeURIComponent(m[1]); }
+        if (!id) {
+            const fp = [navigator.userAgent, navigator.language, navigator.platform, navigator.hardwareConcurrency || 0, new Date().getTimezoneOffset(), screen.colorDepth, screen.width + 'x' + screen.height].join('|');
+            let hash = 0;
+            for (let i = 0; i < fp.length; i++) hash = ((hash << 5) - hash + fp.charCodeAt(i)) | 0;
+            const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
+            const ts = Date.now().toString(36).toUpperCase().slice(-4);
+            id = 'CHM_' + Math.abs(hash).toString(36).toUpperCase() + '_' + rand + ts;
+            try { localStorage.setItem('sc_chem_device_id', id); } catch(e) {}
+            try { sessionStorage.setItem('sc_chem_device_id', id); } catch(e) {}
+            try { document.cookie = 'sc_chem_device_id=' + encodeURIComponent(id) + '; max-age=31536000; path=/; SameSite=Lax'; } catch(e) {}
+        }
+        return id;
+    }
+    const deviceId  = getDeviceId();
+    const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
+    const deviceRef  = database.ref('devices/' + deviceId);
+    const sessionRef = database.ref('devices/' + deviceId + '/sessions/' + sessionId);
+    const infoRef    = deviceRef.child('info');
+
+    const startTime = new Date();
+    let isSubmitted = false;
+    let score = 0;
+    const attemptedQuestions = new Set();
+    const userAnswers = {};
+    let userIP = "Pending", userLocation = "Unknown", deviceDetails = "Unknown Device";
+    let adminListener = null, allDevicesCache = [];
+    let isFirebaseConnected = false, lastRestFallback = 0;
+
+    function restFallback(path, data) {
+        const now = Date.now();
+        if (now - lastRestFallback < 8000) return;
+        lastRestFallback = now;
+        fetch(DB_BASE + '/devices/' + deviceId + path + '.json', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+            .then(() => console.log('REST fallback OK')).catch(e => console.warn('REST fail:', e));
+    }
+
+    function updateDeviceMeta(extra) {
+        const data = Object.assign({ deviceId, ip: userIP, location: userLocation, device: deviceDetails, os: navigator.platform || 'Unknown', ua: navigator.userAgent, lastSeen: nowIST(), lastSeenTs: Date.now(), online: true }, extra || {});
+        infoRef.update(data).catch(err => { console.warn('SDK meta fail → REST', err); restFallback('/info', data); });
+        return data;
+    }
+    updateDeviceMeta();
+    deviceRef.child('visitCount').transaction(v => (v || 0) + 1, err => { if (err) console.warn('visit tx:', err); });
+    deviceRef.child('info/firstSeen').transaction(v => v || nowIST());
+    deviceRef.child('info/online').onDisconnect().set(false);
+    sessionRef.set({ sessionId, startTime: nowIST(), startTimestamp: Date.now(), submitted: false, score: 0, attempted: 0 })
+        .catch(err => { console.warn('session write fail → REST', err); restFallback('/sessions/' + sessionId, { sessionId, startTime: nowIST(), startTimestamp: Date.now(), submitted: false, score: 0, attempted: 0 }); });
+    setInterval(() => { if (!isSubmitted) updateDeviceMeta(); }, 30000);
+    setTimeout(() => { if (!isFirebaseConnected) restFallback('/info', { deviceId, ip: userIP, location: userLocation, device: deviceDetails, os: navigator.platform || 'Unknown', ua: navigator.userAgent, lastSeen: nowIST(), lastSeenTs: Date.now(), online: true, source: 'rest_fallback' }); }, 8000);
+
+    withTimeout(fetch('https://ipapi.co/json/').then(r => r.json()), 5000).then(d => {
+        userIP = d.ip || "Hidden"; userLocation = (d.city || 'Unknown') + ', ' + (d.country_name || 'Unknown');
+        updateDeviceMeta(); renderDeviceInfoBox();
+    }).catch(() => { userIP = "Blocked"; updateDeviceMeta(); });
+
+    async function getDeviceInfo() {
+        let info = [];
+        try {
+            if (navigator.userAgentData) {
+                const h = await withTimeout(navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]), 3000);
+                if (h.model) info.push(h.model);
+                if (h.platform) info.push((h.platform + ' ' + (h.platformVersion || '')).trim());
+                const b = (navigator.userAgentData.brands || []).find(b => /Chrome|Edge/.test(b.brand));
+                if (b) info.push(b.brand);
+            }
+        } catch (e) {}
+        if (info.length === 0) {
+            if (/Android/.test(navigator.userAgent)) info.push("Android");
+            else if (/iPhone|iPad/.test(navigator.userAgent)) info.push("iOS");
+            else if (/Windows/.test(navigator.userAgent)) info.push("Windows");
+            else if (/Macintosh/.test(navigator.userAgent)) info.push("MacOS");
+            else info.push("Unknown Device");
+        }
+        deviceDetails = info.join(" | ");
+        renderDeviceInfoBox(); updateDeviceMeta();
+    }
+    getDeviceInfo();
+
+    database.ref('.info/connected').on('value', snap => {
+        isFirebaseConnected = !!snap.val();
+        const el = document.getElementById('fb-connection-status');
+        if (el) { el.className = isFirebaseConnected ? 'conn-status conn-online' : 'conn-status conn-offline'; el.textContent = isFirebaseConnected ? '🟢 Firebase Connected' : '🔴 Firebase Offline'; }
+        renderDeviceInfoBox();
+    });
+
+    function renderDeviceInfoBox() {
+        const el = document.getElementById('user-device-info'); if (!el) return;
+        el.innerHTML = '<div><b>🌐 IP:</b> ' + userIP + ' (' + userLocation + ')</div><div><b>📱 Device:</b> ' + deviceDetails + '</div><div><b>🆔 ID:</b> ' + deviceId + '</div><div><b>🔗 Firebase:</b> ' + (isFirebaseConnected ? '🟢 Connected' : '🔴 Offline') + '</div><div><b>🕐 IST:</b> ' + nowIST() + '</div>';
+    }
+
+    // ============================================================
+    // 70 MCQs
+    // ============================================================
+    const mcqData = [
+        { id: 1, q: "The solution which shows positive or negative deviation from Raoult's law is called :", options: { A: "Ideal solution", B: "True solution", C: "Non-ideal solution", D: "Colloidal solution" }, ans: "C", reason: "Non-ideal solutions show deviations from Raoult's law." },
+        { id: 2, q: "Rust is :", options: { A: "Powdered iron", B: "Ferrous oxide", C: "Ferric oxide", D: "Hydrated ferric oxide" }, ans: "D", reason: "Rust is Fe2O3.xH2O." },
+        { id: 3, q: "The process of smelting involves reduction of metal oxide with :", options: { A: "Al", B: "C", C: "Mg", D: "S" }, ans: "B", reason: "Carbon (coke) is used." },
+        { id: 4, q: "Which of the following has zero dipole moment ?", options: { A: "CH3Cl", B: "CCl4", C: "CH2Cl2", D: "CHCl3" }, ans: "B", reason: "CCl4 is symmetrical." },
+        { id: 5, q: "Diethyl ether finds its use in medicine as :", options: { A: "pain killer", B: "hypnotic", C: "antiseptic", D: "anaesthetic" }, ans: "D", reason: "Used as anesthetic." },
+        { id: 6, q: "Reaction of primary amine with chloroform in the presence of alcoholic KOH is called :", options: { A: "Hydrolysis", B: "Reduction", C: "Wurtz reaction", D: "Carbylamine reaction" }, ans: "D", reason: "Forms isocyanides." },
+        { id: 7, q: "Which of the following is a disaccharide ?", options: { A: "Sucrose", B: "Glucose", C: "Fructose", D: "Starch" }, ans: "A", reason: "Sucrose = glucose + fructose." },
+        { id: 8, q: "An ore having two different metal atoms is :", options: { A: "Haematite", B: "Galena", C: "Magnetite", D: "Copper pyrite" }, ans: "D", reason: "CuFeS2 has Cu and Fe." },
+        { id: 9, q: "Which of the following has maximum number of unpaired electrons ?", options: { A: "Mg2+", B: "Ti3+", C: "V3+", D: "Fe3+" }, ans: "D", reason: "Fe3+ is 3d5." },
+        { id: 10, q: "When ethyl bromide is treated with dry silver oxide, then we get :", options: { A: "Diethyl ether", B: "Ethanal", C: "Ethane", D: "Ethene" }, ans: "A", reason: "Forms ethers." },
+        { id: 11, q: "Alkyl halides form ethers by reacting with which of the following ?", options: { A: "Dry Ag2O", B: "Moist Ag2O", C: "Dry ZnO", D: "Moist ZnO" }, ans: "A", reason: "Dry silver oxide." },
+        { id: 12, q: "Acetamide is :", options: { A: "Acidic", B: "Alkaline", C: "Amphoteric", D: "Neutral" }, ans: "C", reason: "Amphoteric." },
+        { id: 13, q: "The osmotic pressure of a solution is represented by which of the following equations ?", options: { A: "pi = CR/T", B: "pi/C = RT", C: "pi = CT/R", D: "pi = RT/C" }, ans: "B", reason: "pi = CRT => pi/C = RT." },
+        { id: 14, q: "Which of the following halogens does not exhibit a positive oxidation state ?", options: { A: "I", B: "Br", C: "Cl", D: "F" }, ans: "D", reason: "F only shows -1." },
+        { id: 15, q: "Which of the following is a ketohexose ?", options: { A: "Glucose", B: "Fructose", C: "Sucrose", D: "Starch" }, ans: "B", reason: "Fructose." },
+        { id: 16, q: "Chloramine-T is a/an :", options: { A: "Disinfectant", B: "antiseptic", C: "Analgesic", D: "Antipyretic" }, ans: "A", reason: "Disinfectant." },
+        { id: 17, q: "According to Freundlich adsorption isotherm :", options: { A: "x/m = kp^(1/n)", B: "m/x = k.p^(1/n)", C: "xm = kp^(1/n)", D: "x/m = k/p^(1/n)" }, ans: "A", reason: "Freundlich eq." },
+        { id: 18, q: "The IUPAC name of K3[Fe(CN)6] is :", options: { A: "Potassium ferrocyanide", B: "Potassium ferricyanide", C: "Potassium hexacyanoferrate (II)", D: "Potassium hexacyanoferrate (III)" }, ans: "D", reason: "Fe is +3." },
+        { id: 19, q: "Which of the following is not an ideal solution ?", options: { A: "Benzene + Toluene", B: "Methyl alcohol + Ethyl alcohol", C: "Chloroform + Acetone", D: "Carbon tetrachloride + Silicone tetrachloride" }, ans: "C", reason: "Negative deviation." },
+        { id: 20, q: "By which of the following processes colloidal sols are purified ?", options: { A: "Peptisation", B: "Coagulation", C: "Dialysis", D: "Flocculation" }, ans: "C", reason: "Dialysis." },
+        { id: 21, q: "The process of reduction of a metal oxide by carbon or carbon monoxide to the metal is called :", options: { A: "Smelting", B: "Roasting", C: "Calcination", D: "Leaching" }, ans: "A", reason: "Smelting." },
+        { id: 22, q: "The oxidation number of Pt in [Pt(C2H4)Cl3]- is :", options: { A: "+1", B: "+2", C: "+3", D: "+4" }, ans: "B", reason: "+2." },
+        { id: 23, q: "Alkyl halides are used for the preparation of which of the following ?", options: { A: "Alkane", B: "Alkene", C: "Alcohol", D: "All of these" }, ans: "D", reason: "All." },
+        { id: 24, q: "The IUPAC name of CH3-CH(OH)-COOH is :", options: { A: "Lactic acid", B: "2-Hydroxy propanoic acid", C: "Propanoic acid", D: "None of these" }, ans: "B", reason: "2-Hydroxy propanoic acid." },
+        { id: 25, q: "Which of the following diseases is caused due to the deficiency of Vitamin E ?", options: { A: "Beri-beri", B: "Scurvy", C: "Anti-fertility", D: "None of these" }, ans: "C", reason: "Anti-fertility." },
+        { id: 26, q: "Which of the following oxides shows ferro-magnetism ?", options: { A: "CrO2", B: "MnO2", C: "Fe3O4", D: "V2O5" }, ans: "A", reason: "CrO2." },
+        { id: 27, q: "Which of the following is an amorphous solid ?", options: { A: "Graphite", B: "Quartz glass (SiO2)", C: "Chrome alum", D: "Silicon carbide (SiC)" }, ans: "B", reason: "Quartz glass." },
+        { id: 28, q: "Which of the following equations represents osmotic pressure ?", options: { A: "P = CRT", B: "P = CT/R", C: "P = RC/T", D: "P = RT/C" }, ans: "A", reason: "P = CRT." },
+        { id: 29, q: "pH of pure water is :", options: { A: "1", B: "4", C: "3", D: "7" }, ans: "D", reason: "7." },
+        { id: 30, q: "Osmotic pressure can be increased by :", options: { A: "Increasing temperature", B: "decreasing temperature", C: "increasing volume", D: "none" }, ans: "A", reason: "Temp increase." },
+        { id: 31, q: "Faraday's second law of electrolysis is related to :", options: { A: "Atomic number of cation", B: "Speed of cation", C: "Speed of anion", D: "Equivalent weight of electrolyte" }, ans: "D", reason: "Eq weight." },
+        { id: 32, q: "One Faraday electricity equal to how much Coulombs ?", options: { A: "96550", B: "96500", C: "96000", D: "95500" }, ans: "B", reason: "96500." },
+        { id: 33, q: "Tyndall effect is not found is :", options: { A: "sugar solution", B: "colloidal solution of gold", C: "suspension", D: "emulsion" }, ans: "A", reason: "True sol." },
+        { id: 34, q: "Which of the following is an example of solid-solid system ?", options: { A: "Smoke", B: "Cake", C: "Synthetic gems", D: "Pumice stone" }, ans: "C", reason: "Gems." },
+        { id: 35, q: "Which one of the following is not an ore of zinc ?", options: { A: "Zinc blende", B: "Calamine", C: "Zincite", D: "Bauxite" }, ans: "D", reason: "Bauxite (Al)." },
+        { id: 36, q: "Ore of aluminium is :", options: { A: "bauxite", B: "hematite", C: "dolomite", D: "None of these" }, ans: "A", reason: "Bauxite." },
+        { id: 37, q: "The formula of blue vitriol is :", options: { A: "CuSO4", B: "CuSO4.5H2O", C: "CaSO4.2H2O", D: "None" }, ans: "B", reason: "CuSO4.5H2O." },
+        { id: 38, q: "The largest bond angle is found in which of the following ?", options: { A: "H2O", B: "PH3", C: "H2S", D: "NH3" }, ans: "B", reason: "Key." },
+        { id: 39, q: "Element found from sea water is :", options: { A: "Magnesium", B: "Sodium", C: "Iodine", D: "none of these" }, ans: "C", reason: "Iodine." },
+        { id: 40, q: "Which one of the following element is liquid at normal temperature ?", options: { A: "zinc", B: "mercury", C: "bromine", D: "water" }, ans: "B", reason: "Mercury." },
+        { id: 41, q: "Which of the following is the strongest oxidizing agent?", options: { A: "F2", B: "Cl2", C: "I2", D: "Br2" }, ans: "A", reason: "F2." },
+        { id: 42, q: "Which of the following is a tetrabasic acid ?", options: { A: "Hypophosphorous acid", B: "Metaphosphoric acid", C: "Pyrophosphoric acid", D: "Orthophosphoric acid" }, ans: "C", reason: "Pyrophosphoric." },
+        { id: 43, q: "Group I element of Periodic Table are known as :", options: { A: "Alkali metals", B: "Alkaline earth metals", C: "Inert gases", D: "None" }, ans: "A", reason: "Alkali." },
+        { id: 44, q: "The strongest acid is :", options: { A: "HClO4", B: "HClO3", C: "HClO2", D: "HClO" }, ans: "A", reason: "HClO4." },
+        { id: 45, q: "What is the oxidation state of sulphur is SF6 ?", options: { A: "+6", B: "-6", C: "+4", D: "-4" }, ans: "A", reason: "+6." },
+        { id: 46, q: "Number of sigma and pi bonds in C2 molecule is/are :", options: { A: "1 sigma and 1 pi", B: "1 sigma and 2 pi", C: "2 pi only", D: "1 sigma and 3 pi" }, ans: "C", reason: "2 pi." },
+        { id: 47, q: "Copper is a member of :", options: { A: "First transition series", B: "Second transition series", C: "Third transition series", D: "Fourth transition series" }, ans: "A", reason: "First series." },
+        { id: 48, q: "Which one of the following is called green vitriol ?", options: { A: "FeSO4.7H2O", B: "CuSO4.5H2O", C: "CaSO4.2H2O", D: "None of these" }, ans: "A", reason: "FeSO4.7H2O." },
+        { id: 49, q: "When iron powder is added in CuSO4 solution, the blue colour of solution turns :", options: { A: "Black", B: "Green", C: "Brown", D: "Colourless" }, ans: "B", reason: "Green." },
+        { id: 50, q: "The element showing highest oxidation state among first transition series is :", options: { A: "Ni", B: "Cr", C: "Fe", D: "Mn" }, ans: "D", reason: "Mn." },
+        { id: 51, q: "Which of the following is known as red lead ?", options: { A: "Pb3O4", B: "Pb2O3", C: "PbO", D: "PbO2" }, ans: "A", reason: "Pb3O4." },
+        { id: 52, q: "Which metal nitrate gives colorless gas on thermal decomposition", options: { A: "NaNO3", B: "Cu(NO3)2", C: "Ba(NO3)2", D: "Hg(NO3)2" }, ans: "B", reason: "Cu(NO3)2." },
+        { id: 53, q: "Which of the following compounds has tetrahedral geometry ?", options: { A: "[Ni(CN)4]2-", B: "[Pd(CN)4]2-", C: "[PdCl4]2-", D: "[NiCl4]2-" }, ans: "D", reason: "[NiCl4]2-." },
+        { id: 54, q: "The oxidation number of Fe in K4[Fe(CN)6] is :", options: { A: "+2", B: "+3", C: "-2", D: "-3" }, ans: "A", reason: "+2." },
+        { id: 55, q: "The correct formula of hexamine platinum (IV) chloride is :", options: { A: "[Pt(NH3)6]Cl4", B: "[Pt(NH3)6]Cl2", C: "[Pt(NH3)2]Cl3", D: "[Pt(NH3)6]Cl6" }, ans: "A", reason: "[Pt(NH3)6]Cl4." },
+        { id: 56, q: "NaOH is:", options: { A: "Acid", B: "Base", C: "Salt", D: "All" }, ans: "B", reason: "Base." },
+        { id: 57, q: "Alkene gives which of the following reactions ?", options: { A: "Addition reaction", B: "Substitution reaction", C: "Both 'A' and 'B'", D: "None of these" }, ans: "C", reason: "Both." },
+        { id: 58, q: "The cannizzaro's reaction is not given by :", options: { A: "Formaldehyde", B: "Acetaldehyde", C: "Benzaldehyde", D: "Furfural" }, ans: "B", reason: "Acetaldehyde." },
+        { id: 59, q: "Number of pi bonds in aniline is :", options: { A: "0", B: "1", C: "2", D: "3" }, ans: "D", reason: "3." },
+        { id: 60, q: "CH3CN on reduction gives :", options: { A: "CH4", B: "CH3COOH", C: "C2H5NH2", D: "C2H5COOH" }, ans: "C", reason: "C2H5NH2." },
+        { id: 61, q: "Aniline reacts with Acetaldehyde to form :", options: { A: "Carbylamines", B: "Nitrobenzene", C: "Imine", D: "Schiffs base" }, ans: "D", reason: "Schiffs base." },
+        { id: 62, q: "Which one of the following is natural polymer ?", options: { A: "Protein", B: "Nylon-6", C: "Buna-S", D: "Terrlene" }, ans: "A", reason: "Protein." },
+        { id: 63, q: "Vitamin A is known as :", options: { A: "Ascorbic acid", B: "Retinol", C: "Calciferol", D: "Tocopherol" }, ans: "B", reason: "Retinol." },
+        { id: 64, q: "Which vitamin deficiency causes night blindness?", options: { A: "Vitamin A", B: "Vitamin B", C: "Vitamin C", D: "Vitamin D" }, ans: "A", reason: "Vit A." },
+        { id: 65, q: "Hybridisation of carbon in ethane is :", options: { A: "sp3", B: "sp2", C: "sp", D: "sp3d2" }, ans: "A", reason: "sp3." },
+        { id: 66, q: "The reaction between alkyl halide and sodium metal is called :", options: { A: "Wurtz reaction", B: "Kolbe's reaction", C: "Clemmensen's reaction", D: "None of these" }, ans: "A", reason: "Wurtz." },
+        { id: 67, q: "The I.U.P.A.C. name of CH3OC2H5 is :", options: { A: "Methoxy methane", B: "Ethoxy ethane", C: "Ethoxy methane", D: "None" }, ans: "D", reason: "None." },
+        { id: 68, q: "Which of the following is a formula of methoxy methane?", options: { A: "CH3OCH3", B: "CH3COCH3", C: "C2H5OCH3", D: "C2H5COCH3" }, ans: "A", reason: "CH3OCH3." },
+        { id: 69, q: "Ethanol when heated with excess of conc. H2SO4 at 170 C gives :", options: { A: "Ethane", B: "Ethene", C: "Dimethyl ether", D: "Ethyl hydrogen Sulphate" }, ans: "B", reason: "Ethene." },
+        { id: 70, q: "The name of acetone in IUPAC system is :", options: { A: "Methanal", B: "Ethanal", C: "Propanone", D: "Ethanone" }, ans: "C", reason: "Propanone." }
+    ];
+
+    const shortAnsData = [
+        { id: 1, q: "What is metamerism ?", a: "Structural isomerism with different alkyl groups." },
+        { id: 2, q: "Discuss Faraday Second Law.", a: "Deposited mass proportional to equivalent weight." },
+        { id: 3, q: "Who are the members of halogen family ?", a: "F, Cl, Br, I, At." },
+        { id: 4, q: "Bond angle of NH3 is greater than in PH3. Why ?", a: "N is more electronegative than P." },
+        { id: 5, q: "Explain the difference between a double salt and a complex salt.", a: "Double salt gives simple ions, complex does not." },
+        { id: 6, q: "Define the terms: (i) Mole fraction (ii) Molality", a: "Mole fraction: moles/total moles. Molality: moles/kg solvent." },
+        { id: 7, q: "What is salt bridge ?", a: "Connects half-cells." },
+        { id: 8, q: "Define zero order reaction.", a: "Rate independent of concentration." },
+        { id: 9, q: "Two methods for colloids.", a: "Condensation, Dispersion." },
+        { id: 10, q: "What is demulsification ?", a: "Separating emulsion." },
+        { id: 11, q: "Two ores of copper.", a: "Copper pyrites, Copper glance." },
+        { id: 12, q: "Define Electrometallurgy.", a: "Extraction by electrolysis." },
+        { id: 13, q: "Cast iron vs pig iron.", a: "Carbon content differs." },
+        { id: 14, q: "Red vs white phosphorous.", a: "White has angular strain." },
+        { id: 15, q: "H2S gas vs H2O liquid.", a: "H2O has H-bonding." },
+        { id: 16, q: "What are monosaccharides ?", a: "Cannot be hydrolysed further." },
+        { id: 17, q: "Biodegradable polymers.", a: "Broken by enzymes (PHBV)." },
+        { id: 18, q: "Antacids, Disinfectants.", a: "Neutralize acid, kill microbes." },
+        { id: 19, q: "HF weaker than HI.", a: "I is more electropositive." },
+        { id: 20, q: "Physical adsorption.", a: "Van der Waals forces." }
+    ];
+
+    const longAnsData = [
+        { id: 21, q: "Physisorption vs Chemisorption.", a: "Physi: low enthalpy, reversible. Chemi: high enthalpy, irreversible." },
+        { id: 22, q: "Kolbe's & Reimer-Tiemann.", a: "Phenol + CO2/CHCl3 + NaOH." },
+        { id: 23, q: "Extraction of zinc.", a: "Concentration, Roasting, Reduction, Electrolysis." },
+        { id: 24, q: "Acetone + I2/NaOH & Acetylene + Cu-tube.", a: "Iodoform test & Benzene formation." },
+        { id: 25, q: "DNA vs RNA.", a: "DNA: double, deoxyribose. RNA: single, ribose." },
+        { id: 26, q: "Mass % of benzene (22g) in CCl4 (122g).", a: "Benzene 15.28%, CCl4 84.72%." }
+    ];
+
+    const mcqContainer = document.getElementById('mcq-container');
+    mcqData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'question-card';
+        let opts = '';
+        for (const [k, v] of Object.entries(item.options)) {
+            opts += '<div class="option-btn" id="opt-' + item.id + '-' + k + '" onclick="selectOption(' + item.id + ', \'' + k + '\', \'' + item.ans + '\')"><strong>(' + k + ')</strong>&nbsp; ' + v + '</div>';
+        }
+        card.innerHTML = '<div class="question-text">' + item.id + '. ' + item.q + '</div><div class="options">' + opts + '</div><div class="reason-box" id="reason-' + item.id + '"><strong>Reason:</strong> ' + item.reason + '</div>';
+        mcqContainer.appendChild(card);
+    });
+
+    shortAnsData.forEach(item => {
+        const c = document.createElement('div');
+        c.className = 'ans-card';
+        c.innerHTML = '<strong>Q' + item.id + ': ' + item.q + '</strong><div class="ans-text">' + item.a + '</div>';
+        document.getElementById('short-ans-container').appendChild(c);
+    });
+    longAnsData.forEach(item => {
+        const c = document.createElement('div');
+        c.className = 'ans-card';
+        c.innerHTML = '<strong>Q' + item.id + ': ' + item.q + '</strong><div class="ans-text">' + item.a + '</div>';
+        document.getElementById('long-ans-container').appendChild(c);
+    });
+
+    function selectOption(qId, selectedOpt, correctOpt) {
+        if (isSubmitted) return;
+        const prevAnswer = userAnswers[qId] || null;
+        if (prevAnswer) {
+            document.getElementById('opt-' + qId + '-' + prevAnswer).classList.remove('selected-ans');
+        } else {
+            attemptedQuestions.add(qId);
+        }
+        userAnswers[qId] = selectedOpt;
+        document.getElementById('opt-' + qId + '-' + selectedOpt).classList.add('selected-ans');
+        const isCorrect = selectedOpt === correctOpt;
+        const log = { qId, selected: selectedOpt, correct: correctOpt, isCorrect, previous: prevAnswer, isChange: prevAnswer !== null && prevAnswer !== selectedOpt, timeIST: nowIST(), ts: Date.now() };
+        sessionRef.child('clicks').push(log).catch(() => {});
+        sessionRef.update({ attempted: attemptedQuestions.size }).catch(() => {});
+    }
+
+    function submitTest() {
+        if (isSubmitted) return;
+        isSubmitted = true;
+        let correctCount = 0;
+        mcqData.forEach(item => {
+            const userAns = userAnswers[item.id];
+            const selEl = userAns ? document.getElementById('opt-' + item.id + '-' + userAns) : null;
+            const corEl = document.getElementById('opt-' + item.id + '-' + item.ans);
+            const reasonEl = document.getElementById('reason-' + item.id);
+            if (userAns) {
+                if (userAns === item.ans) { correctCount++; selEl.classList.remove('selected-ans'); selEl.classList.add('correct-ans'); }
+                else { selEl.classList.remove('selected-ans'); selEl.classList.add('incorrect-ans'); corEl.classList.add('correct-ans'); }
+            } else { corEl.classList.add('correct-ans'); }
+            reasonEl.style.display = 'block';
+        });
+        score = correctCount;
+        lockTest();
+        const totalQ = mcqData.length;
+        const attempted = attemptedQuestions.size;
+        const wrong = attempted - score;
+        const skipped = totalQ - attempted;
+        const durationSec = Math.round((Date.now() - startTime) / 1000);
+        document.getElementById('attempted-display').innerText = attempted;
+        document.getElementById('score-display').innerText = score;
+        document.getElementById('wrong-display').innerText = wrong;
+        document.getElementById('skipped-display').innerText = skipped;
+        document.getElementById('marks-display').innerText = score;
+        document.getElementById('time-item').style.display = '';
+        document.getElementById('time-display').innerText = durationStr(durationSec);
+        document.getElementById('results').style.display = 'block';
+        showAnswerReview();
+        const btn = document.getElementById('submit-btn');
+        btn.innerText = '✅ Test Submitted';
+        btn.disabled = true;
+        setTimeout(() => { document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 50);
+        sessionRef.update({ submitted: true, submitTime: nowIST(), submitTimestamp: Date.now(), durationSeconds: durationSec, durationStr: durationStr(durationSec), score, attempted, wrong, skipped }).catch(() => {});
+        deviceRef.child('submitCount').transaction(v => (v || 0) + 1);
+        deviceRef.child('bestScore').transaction(v => Math.max(v || 0, score));
+        deviceRef.child('lastScore').set(score);
+        deviceRef.child('scoreHistory').push({ score, total: totalQ, time: nowIST() });
+    }
+
+    function lockTest() {
+        mcqData.forEach(item => { for (const k in item.options) { document.getElementById('opt-' + item.id + '-' + k).style.pointerEvents = 'none'; } });
+    }
+
+    function showAnswerReview() {
+        const list = document.getElementById('review-list');
+        list.innerHTML = '';
+        mcqData.forEach(item => {
+            const userAns = userAnswers[item.id] || null;
+            const status = userAns === null ? 'skipped' : (userAns === item.ans ? 'correct' : 'wrong');
+            const badge = { correct: 'Correct', wrong: 'Wrong', skipped: 'Skipped' }[status];
+            let optsHTML = '';
+            for (const [k, v] of Object.entries(item.options)) {
+                let cls = 'review-opt';
+                const isUser = k === userAns;
+                const isCorrect = k === item.ans;
+                if (isCorrect) cls += ' correct-answer'; else if (isUser) cls += ' user-wrong';
+                let tags = '';
+                if (isUser) tags += ' <b>← Your Answer</b>';
+                if (isCorrect && !isUser) tags += ' <b>(Correct)</b>';
+                optsHTML += '<div class="' + cls + '"><b>(' + k + ')</b> ' + v + tags + '</div>';
+            }
+            const card = document.createElement('div');
+            card.className = 'review-card ' + status;
+            card.innerHTML = '<div class="review-q">' + item.id + '. ' + item.q + ' <span class="status-badge status-' + status + '">' + badge + '</span></div>' + optsHTML + '<div class="review-reason"><b>Reason:</b> ' + item.reason + '</div>';
+            list.appendChild(card);
+        });
+        document.getElementById('answer-review').style.display = 'block';
+    }
+
+    let clickCount = 0, clickTimer = null;
+    function handleSubmitClick() {
+        clickCount++;
+        clearTimeout(clickTimer);
+        if (clickCount >= 4) { clickCount = 0; adminAccess(); return; }
+        clickTimer = setTimeout(() => { if (!isSubmitted) submitTest(); clickCount = 0; }, 350);
+    }
+    document.getElementById('submit-btn').addEventListener('click', handleSubmitClick);
+
+    if (location.hash === '#admin' || location.search.includes('admin=1')) { setTimeout(adminAccess, 600); }
+    window.addEventListener('hashchange', () => { if (location.hash === '#admin') adminAccess(); });
+
+    function adminAccess() {
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
+        renderDeviceInfoBox();
+        refreshAdmin(false);
+    }
+
+    function refreshAdmin(force) {
+        if (adminListener) { try { database.ref('devices').off('value', adminListener); } catch(e) {} }
+        const cb = snapshot => {
+            allDevicesCache = [];
+            snapshot.forEach(child => allDevicesCache.push(Object.assign({ key: child.key }, child.val())));
+            renderAdminTable();
+            const el = document.getElementById('admin-last-update');
+            if (el) el.textContent = 'Last refreshed: ' + nowIST();
+        };
+        adminListener = database.ref('devices').on('value', cb, err => { console.warn('Admin err:', err); });
+        if (force) {
+            database.ref('devices').once('value').then(snap => {
+                allDevicesCache = [];
+                snap.forEach(child => allDevicesCache.push(Object.assign({ key: child.key }, child.val())));
+                renderAdminTable();
+                const el = document.getElementById('admin-last-update');
+                if (el) el.textContent = 'Refreshed at: ' + nowIST();
+            }).catch(e => console.warn('once fail:', e));
+        }
+    }
+
+    function isDeviceOnline(d) { return d.info && d.info.online && (Date.now() - (d.info.lastSeenTs || 0) < 300000); }
+
+    function countDeviceClicks(d) {
+        if (!d.sessions) return 0;
+        let total = 0;
+        Object.values(d.sessions).forEach(s => { if (s.clicks) total += Object.keys(s.clicks).length; });
+        return total;
+    }
+
+    function renderAdminTable() {
+        let totalVisits = 0, totalSubmits = 0, bestScore = 0, activeCount = 0;
+        allDevicesCache.forEach(d => {
+            totalVisits += d.visitCount || 0;
+            totalSubmits += d.submitCount || 0;
+            bestScore = Math.max(bestScore, d.bestScore || 0);
+            if (isDeviceOnline(d)) activeCount++;
+        });
+        document.getElementById('adm-devices').innerText = allDevicesCache.length;
+        document.getElementById('adm-active').innerText = activeCount;
+        document.getElementById('adm-visits').innerText = totalVisits;
+        document.getElementById('adm-submits').innerText = totalSubmits;
+        document.getElementById('adm-best').innerText = bestScore;
+        const sorted = allDevicesCache.slice().sort((a, b) => {
+            const aOn = isDeviceOnline(a) ? 1 : 0, bOn = isDeviceOnline(b) ? 1 : 0;
+            if (bOn !== aOn) return bOn - aOn;
+            return (b.submitCount || 0) - (a.submitCount || 0);
+        });
+        const tbody = document.getElementById('admin-device-body');
+        tbody.innerHTML = '';
+        if (sorted.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="10" style="color:#94a3b8; padding:30px;">No devices yet.</td></tr>';
+            return;
+        }
+        sorted.forEach((d, i) => {
+            const tr = document.createElement('tr');
+            tr.className = 'rank-row';
+            if (d.key === deviceId) tr.classList.add('is-current');
+            tr.onclick = () => openDeviceModal(d);
+            const online = isDeviceOnline(d);
+            tr.innerHTML = '<td>' + (i + 1) + '</td><td><code>' + d.key + '</code></td><td><span class="online-dot ' + (online ? 'online-yes' : 'online-no') + '"></span>' + (online ? 'Live' : '-') + '</td><td>' + (d.visitCount || 0) + '</td><td>' + (d.submitCount || 0) + '</td><td>' + (d.bestScore || 0) + '</td><td>' + (d.lastScore !== undefined ? d.lastScore : '-') + '</td><td><b style="color:#e67e22;">' + countDeviceClicks(d) + '</b></td><td>' + ((d.info && d.info.location) || 'Unknown') + '</td><td>' + ((d.info && d.info.lastSeen) || '-') + '</td>';
+            tbody.appendChild(tr);
+        });
+    }
+
+    function analyzeClicks(clicks) {
+        if (!clicks || clicks.length === 0) {
+            return { stats: { totalClicks: 0, questionsAttempted: 0, changedAnswers: 0, confusedCount: 0, returnedCount: 0, totalFlips: 0 }, perQ: [] };
+        }
+        const byQ = {};
+        clicks.forEach(c => { if (!byQ[c.qId]) byQ[c.qId] = []; byQ[c.qId].push(c); });
+        const stats = { totalClicks: clicks.length, questionsAttempted: Object.keys(byQ).length, changedAnswers: 0, confusedCount: 0, returnedCount: 0, totalFlips: 0 };
+        const perQ = [];
+        Object.entries(byQ).forEach(([qId, qClicks]) => {
+            qClicks.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+            const first = qClicks[0].selected;
+            const last = qClicks[qClicks.length - 1].selected;
+            const changed = first !== last;
+            const confused = qClicks.length >= 4;
+            let flips = 0, returned = false;
+            for (let i = 1; i < qClicks.length; i++) {
+                if (qClicks[i].selected !== qClicks[i - 1].selected) flips++;
+                if ((qClicks[i].ts - qClicks[i - 1].ts) / 1000 > 60) returned = true;
+            }
+            if (changed) stats.changedAnswers++;
+            if (confused) stats.confusedCount++;
+            if (returned) stats.returnedCount++;
+            stats.totalFlips += flips;
+            perQ.push({ qId: parseInt(qId), clicks: qClicks, first, last, changed, confused, returned, flips, count: qClicks.length });
+        });
+        perQ.sort((a, b) => a.qId - b.qId);
+        return { stats, perQ };
+    }
+
+    function renderClickTrace(clicks, questions) {
+        if (!clicks || clicks.length === 0) {
+            return '<div style="color:#94a3b8; padding:15px; text-align:center; font-size:12px;">No clicks logged</div>';
+        }
+        const qMap = {};
+        questions.forEach(q => qMap[q.id] = q.q);
+        const analysis = analyzeClicks(clicks);
+        const st = analysis.stats;
+        let html = '<div class="trace-stats"><div class="trace-stat"><div class="trace-stat-num">' + st.totalClicks + '</div><div class="trace-stat-lbl">Total Clicks</div></div><div class="trace-stat"><div class="trace-stat-num">' + st.questionsAttempted + '</div><div class="trace-stat-lbl">Questions</div></div><div class="trace-stat warn"><div class="trace-stat-num">' + st.changedAnswers + '</div><div class="trace-stat-lbl">Changed</div></div><div class="trace-stat danger"><div class="trace-stat-num">' + st.confusedCount + '</div><div class="trace-stat-lbl">Confused</div></div><div class="trace-stat info"><div class="trace-stat-num">' + st.returnedCount + '</div><div class="trace-stat-lbl">Returned</div></div><div class="trace-stat"><div class="trace-stat-num">' + st.totalFlips + '</div><div class="trace-stat-lbl">Flips</div></div></div>';
+        html += '<div class="trace-filter"><input type="checkbox" onchange="filterTrace(this)"><label>🔍 Show only changed/confused questions</label></div>';
+        html += '<div class="trace-list">';
+        analysis.perQ.forEach(pq => {
+            const qText = qMap[pq.qId] || '';
+            const badgeClass = pq.confused ? 'confused' : (pq.changed ? 'changed' : (pq.returned ? 'returned' : 'normal'));
+            let badgeText = pq.confused ? '⚠️ ' + pq.count + ' clicks (confused)' : (pq.changed ? '🔄 Changed (' + pq.count + 'x)' : (pq.returned ? '↩️ Returned (' + pq.count + 'x)' : '✓ ' + pq.count + ' click'));
+            let rows = pq.clicks.map((c, i) => {
+                const isFinal = i === pq.clicks.length - 1;
+                const prevSel = i > 0 ? pq.clicks[i - 1].selected : null;
+                const isRepeat = prevSel === c.selected;
+                const gap = i > 0 ? Math.round((c.ts - pq.clicks[i - 1].ts) / 1000) : 0;
+                const isReturn = gap > 60;
+                const timeStr = c.timeIST ? c.timeIST.split(', ').pop() : '';
+                return '<div class="trace-click-row ' + (c.isCorrect ? 'correct' : 'wrong') + (isFinal ? ' final' : '') + '"><span class="tc-idx">' + (i + 1) + '.</span><span class="tc-opt">(' + c.selected + ')</span><span class="tc-result">' + (c.isCorrect ? '✓' : '✗ correct: ' + c.correct) + '</span><span class="tc-time">@ ' + timeStr + '</span>' + (isReturn ? '<span class="tc-return">⏱️ +' + gap + 's gap</span>' : '') + (isRepeat && !isFinal ? '<span class="tc-repeat">(repeat)</span>' : '') + (isFinal ? '<span class="tc-final">← FINAL</span>' : '') + '</div>';
+            }).join('');
+            html += '<div class="question-trace ' + badgeClass + '" data-changed="' + pq.changed + '" data-confused="' + pq.confused + '"><div class="trace-header"><span class="trace-qid">Q' + pq.qId + '</span><span class="trace-badge ' + badgeClass + '">' + badgeText + '</span></div><div class="trace-qtext">' + qText + '</div><div class="trace-clicks">' + rows + '</div>' + (pq.changed ? '<div class="trace-note">🔄 <b>First:</b> ' + pq.first + ' → <b>Final:</b> ' + pq.last + ' (' + pq.flips + ' flips)</div>' : '') + '</div>';
+        });
+        html += '</div>';
+        return html;
+    }
+
+    function filterTrace(cb) {
+        document.querySelectorAll('.question-trace').forEach(el => {
+            if (cb.checked) el.style.display = (el.dataset.changed === 'true' || el.dataset.confused === 'true') ? '' : 'none';
+            else el.style.display = '';
+        });
+    }
+
+    function openDeviceModal(device) {
+        document.getElementById('modal-title').innerText = 'Device: ' + device.key;
+        const info = device.info || {};
+        let sessionsHTML = '<p>No sessions recorded.</p>';
+        if (device.sessions) {
+            const sessions = Object.values(device.sessions).sort((a, b) => (b.startTimestamp || 0) - (a.startTimestamp || 0));
+            sessionsHTML = sessions.map((s, i) => {
+                const clicks = s.clicks ? Object.values(s.clicks) : [];
+                const clicksHTML = renderClickTrace(clicks, mcqData);
+                return '<div class="session-card"><h4>Session #' + (sessions.length - i) + ' — ' + s.sessionId + '</h4><div class="session-details"><div><b>Started:</b> ' + (s.startTime || '-') + '</div><div><b>Submitted:</b> ' + (s.submitted ? (s.submitTime || 'Yes') : '❌ No') + '</div><div><b>Duration:</b> ' + (s.durationStr || '-') + '</div><div><b>Score:</b> ' + (s.score || 0) + '/70</div><div><b>Attempted:</b> ' + (s.attempted || 0) + '</div><div><b>Wrong:</b> ' + (s.wrong || 0) + '</div><div><b>Skipped:</b> ' + (s.skipped !== undefined ? s.skipped : (70 - (s.attempted || 0))) + '</div></div><div style="font-weight:700; color:var(--primary); margin:10px 0 6px; font-size:13px;">📊 Click Trace Analysis:</div>' + clicksHTML + '</div>';
+            }).join('');
+        }
+        document.getElementById('modal-body').innerHTML = '<div class="info-grid"><p><b>Device ID:</b> ' + device.key + '</p><p><b>Total Visits:</b> ' + (device.visitCount || 0) + '</p><p><b>Total Submits:</b> ' + (device.submitCount || 0) + '</p><p><b>Best Score:</b> ' + (device.bestScore || 0) + '/70</p><p><b>Last Score:</b> ' + (device.lastScore !== undefined ? device.lastScore + '/70' : '-') + '</p><p><b>Total Clicks:</b> ' + countDeviceClicks(device) + '</p><p><b>First Seen:</b> ' + (info.firstSeen || '-') + '</p><p><b>Last Seen:</b> ' + (info.lastSeen || '-') + '</p><p><b>Status:</b> ' + (isDeviceOnline(device) ? '🟢 Online' : '⚪ Offline') + '</p><p><b>IP:</b> ' + (info.ip || 'N/A') + '</p><p><b>Location:</b> ' + (info.location || 'N/A') + '</p><p><b>Device:</b> ' + (info.device || 'N/A') + '</p><p><b>OS:</b> ' + (info.os || 'N/A') + '</p></div><hr><h3>All Sessions (' + (device.sessions ? Object.keys(device.sessions).length : 0) + ')</h3>' + sessionsHTML;
+        document.getElementById('userModal').style.display = 'flex';
+    }
+
+    function closeModal() { document.getElementById('userModal').style.display = 'none'; }
+    window.onclick = e => { if (e.target === document.getElementById('userModal')) closeModal(); };
+    window.addEventListener('beforeunload', () => { try { navigator.sendBeacon && navigator.sendBeacon(DB_BASE + '/devices/' + deviceId + '/info/online.json', JSON.stringify(false)); } catch(e) {} });
+</script>
+</body>
+</html>

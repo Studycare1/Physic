@@ -1,886 +1,390 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Physics Pro - StudyCare</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #6366f1; --primary-hover: #4f46e5;
-            --secondary: #1e293b; --correct: #10b981;
-            --incorrect: #ef4444; --skipped: #94a3b8;
-            --bg: #f8fafc; --card-bg: rgba(255, 255, 255, 0.95);
-            --glass-border: rgba(255, 255, 255, 0.2);
-        }
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Outfit', sans-serif;
-            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
-            background-attachment: fixed;
-            color: #334155; line-height: 1.6; margin: 0; padding: 20px;
-        }
-        .container {
-            max-width: 1100px; margin: 0 auto; background: var(--card-bg);
-            padding: 40px; border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05), 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid var(--glass-border);
-            backdrop-filter: blur(10px);
-            animation: fadeIn 0.8s ease-out;
-        }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        .header { text-align: center; margin-bottom: 40px; }
-        h1 { font-weight: 700; font-size: 2.2rem; background: linear-gradient(90deg, #1e293b, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
-        h2, h3 { text-align: center; color: var(--secondary); font-weight: 600; }
-        .header-info { font-weight: 500; color: #64748b; font-size: 1.1rem; }
-
-        .question-card {
-            background: white; border: 1px solid #e2e8f0; border-radius: 16px;
-            padding: 20px 25px; margin-bottom: 25px;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.02);
-        }
-        .question-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
-        .question-text { font-weight: 600; margin-bottom: 20px; font-size: 1.1rem; color: #1e293b; }
-
-        .options { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        @media (max-width: 600px) { .options { grid-template-columns: 1fr; } }
-
-        .option-btn {
-            display: flex; align-items: center; cursor: pointer; padding: 12px 18px;
-            border-radius: 12px; border: 2px solid #e2e8f0; background: #f8fafc;
-            font-size: 15px; font-weight: 500; transition: all 0.2s ease;
-        }
-        .option-btn:hover { border-color: var(--primary); background: #eef2ff; }
-        .option-btn.selected-ans { background-color: #e0e7ff !important; border-color: var(--primary); color: #3730a3; font-weight: 700; }
-        .option-btn.correct-ans { background-color: #ecfdf5 !important; border-color: var(--correct); color: #065f46; font-weight: 700; }
-        .option-btn.incorrect-ans { background-color: #fef2f2 !important; border-color: var(--incorrect); color: #991b1b; font-weight: 700; }
-
-        .reason-box { display: none; margin-top: 20px; padding: 15px; background: #fffbeb; border-left: 4px solid #f59e0b; border-radius: 8px; font-size: 14px; color: #92400e; }
-
-        .btn-container { display: flex; justify-content: center; margin: 40px 0; gap: 12px; flex-wrap: wrap; }
-        button {
-            padding: 15px 40px; font-size: 16px; font-weight: 700; font-family: 'Outfit';
-            border: none; border-radius: 12px; cursor: pointer; transition: all 0.3s ease;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
-            color: white; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
-        }
-        button:hover { transform: translateY(-2px); box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5); }
-        button:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; transform: none; }
-
-        #results { display: none; text-align: center; margin-top: 30px; padding: 30px; background: white; border-radius: 16px; border: 2px solid #e2e8f0; }
-        .result-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 700px; margin: 20px auto 0; }
-        @media (max-width: 600px) { .result-grid { grid-template-columns: repeat(2, 1fr); } }
-        .rg-item { background: #f8fafc; padding: 15px; border-radius: 12px; border: 1px solid #e2e8f0; }
-        .rg-label { font-size: 12px; color: #64748b; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-        .rg-value { font-size: 26px; font-weight: 700; color: var(--secondary); }
-        .rg-item.highlight { background: linear-gradient(135deg, #1e293b 0%, #334155 100%); border: none; color: white; }
-        .rg-item.highlight .rg-label { color: #cbd5e1; }
-        .rg-item.highlight .rg-value { color: white; }
-
-        #answer-review { display: none; margin-top: 40px; padding: 30px; background: #f8fafc; border-radius: 16px; border: 1px solid #e2e8f0; }
-        .review-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 6px solid #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        .review-card.correct { border-left-color: var(--correct); }
-        .review-card.wrong { border-left-color: var(--incorrect); }
-        .review-card.skipped { border-left-color: var(--skipped); }
-        .review-q { font-weight: 700; margin-bottom: 15px; font-size: 1.1rem; color: var(--secondary); }
-        .review-opt { padding: 10px 15px; margin: 8px 0; border-radius: 8px; font-size: 15px; background: #f1f5f9; }
-        .review-opt.user-wrong { background: #fef2f2; border: 1px solid var(--incorrect); }
-        .review-opt.correct-answer { background: #ecfdf5; border: 2px solid var(--correct); font-weight: 700; }
-        .review-reason { margin-top: 15px; padding: 15px; background: #fef3c7; border-radius: 8px; font-size: 14px; color: #92400e; }
-        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; color: white; margin-left: 10px; }
-        .status-correct { background: var(--correct); }
-        .status-wrong { background: var(--incorrect); }
-        .status-skipped { background: var(--skipped); }
-
-        #admin-panel { display: none; margin-top: 40px; padding: 30px; background: #1e293b; border-radius: 16px; color: white; }
-        #admin-panel h2 { color: #f8fafc; }
-        .admin-stats { display: grid; grid-template-columns: repeat(5, 1fr); gap: 15px; margin: 25px 0; }
-        @media (max-width: 700px) { .admin-stats { grid-template-columns: repeat(2, 1fr); } }
-        .admin-stat { background: #334155; padding: 20px; border-radius: 12px; text-align: center; border: 1px solid #475569; }
-        .admin-stat .num { font-size: 26px; font-weight: 700; color: #818cf8; }
-        .admin-stat .lbl { font-size: 11px; color: #cbd5e1; text-transform: uppercase; letter-spacing: 1px; margin-top: 5px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-        th, td { padding: 10px 8px; text-align: center; border-bottom: 1px solid #334155; }
-        th { background-color: #0f172a; color: #cbd5e1; font-weight: 600; }
-        .rank-row { cursor: pointer; transition: background 0.2s; }
-        .rank-row:hover { background-color: #334155; }
-        .rank-row.is-current { background-color: #4f46e5; color: white; }
-        .device-info { font-size: 13px; color: #e2e8f0; margin-top: 20px; background: #0f172a; padding: 20px; border-radius: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; border: 1px solid #334155; }
-        @media (max-width: 600px) { .device-info { grid-template-columns: 1fr; } }
-        .device-info b { color: #818cf8; }
-
-        .admin-controls { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; align-items: center; margin-bottom: 20px; }
-        .admin-controls button { padding: 10px 22px; font-size: 14px; }
-        .conn-status { display: inline-block; padding: 5px 14px; border-radius: 20px; font-size: 12px; font-weight: 700; }
-        .conn-online { background: #10b981; color: white; }
-        .conn-offline { background: #ef4444; color: white; }
-        .online-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
-        .online-yes { background: #10b981; box-shadow: 0 0 6px #10b981; }
-        .online-no { background: #64748b; }
-        #admin-last-update { font-size: 12px; color: #94a3b8; text-align: center; margin-top: 10px; }
-
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(15, 23, 42, 0.8); backdrop-filter: blur(5px); align-items: center; justify-content: center; }
-        .modal-content { background-color: #f8fafc; margin: auto; padding: 30px; border-radius: 16px; width: 90%; max-width: 800px; max-height: 85vh; overflow-y: auto; position: relative; }
-        .close-btn { color: #64748b; float: right; font-size: 32px; font-weight: bold; cursor: pointer; line-height: 1; }
-        .close-btn:hover { color: #ef4444; }
-        .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 20px; }
-        @media (max-width: 600px) { .info-grid { grid-template-columns: 1fr; } }
-        .info-grid p { margin: 5px 0; font-size: 14px; }
-        .info-grid b { color: var(--primary); }
-        .session-card { background: white; border-left: 4px solid var(--primary); padding: 15px; margin: 15px 0; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        .session-card h4 { margin: 0 0 10px 0; color: var(--secondary); font-size: 15px; }
-        .session-details { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; font-size: 13px; margin-bottom: 15px; }
-        .session-details div { background: #f1f5f9; padding: 8px; border-radius: 6px; }
-        .session-details b { color: var(--primary); }
-        .click-log { max-height: 200px; overflow-y: auto; margin-top: 10px; font-size: 12px; background: #f8fafc; padding: 10px; border-radius: 6px; border: 1px solid #e2e8f0; }
-        .click-log div { padding: 4px 8px; border-bottom: 1px solid #e2e8f0; font-family: monospace; }
-        .click-log .ok { color: var(--correct); }
-        .click-log .fail { color: var(--incorrect); }
-
-        #section-b { margin-top: 50px; border-top: 2px dashed #cbd5e1; padding-top: 30px; }
-        .ans-card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 20px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-        .ans-text { color: #475569; margin-top: 15px; white-space: pre-wrap; font-size: 15px; line-height: 1.8; }
-    </style>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Physics Model Paper - StudyCare</title>
+<style>
+:root{--primary:#6366f1;--primary-dark:#4f46e5;--secondary:#1e293b;--correct:#10b981;--incorrect:#ef4444;--skipped:#94a3b8;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%);background-attachment:fixed;color:#334155;line-height:1.6;margin:0;padding:16px;min-height:100vh;}
+.container{max-width:1100px;margin:0 auto;background:rgba(255,255,255,0.95);backdrop-filter:blur(20px);padding:32px 24px;border-radius:24px;box-shadow:0 8px 32px rgba(31,38,135,0.12);border:1px solid rgba(255,255,255,0.4);}
+@media(max-width:600px){body{padding:8px}.container{padding:20px 14px;border-radius:18px}}
+h1{font-size:1.8rem;font-weight:800;text-align:center;background:linear-gradient(135deg,#6366f1,#a855f7,#ec4899);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:4px;}
+h2{text-align:center;color:#1e293b;font-size:1.2rem;margin-top:28px;}
+.header-info{text-align:center;font-weight:600;color:#64748b;font-size:13px;margin-bottom:24px;padding:8px;background:linear-gradient(90deg,#e0e7ff,#fae8ff);border-radius:30px;}
+.question-card{background:#fff;border:1px solid #e2e8f0;border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.04);transition:all 0.25s ease;}
+.question-card:hover{box-shadow:0 6px 20px rgba(99,102,241,0.12);transform:translateY(-2px);}
+.question-text{font-weight:700;margin-bottom:14px;font-size:15px;color:#1e293b;line-height:1.5;}
+.options{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+@media(max-width:600px){.options{grid-template-columns:1fr}}
+.option-btn{display:flex;align-items:center;cursor:pointer;padding:12px 16px;border-radius:12px;border:2px solid #e2e8f0;background:#f8fafc;font-size:14px;font-weight:500;transition:all 0.2s;}
+.option-btn:hover{border-color:var(--primary);background:#eef2ff;}
+.option-btn.selected-ans{background:#e0e7ff!important;border-color:var(--primary);color:#3730a3;font-weight:700;box-shadow:0 0 0 3px rgba(99,102,241,0.15);}
+.option-btn.correct-ans{background:#ecfdf5!important;border-color:var(--correct);color:#065f46;font-weight:700;}
+.option-btn.incorrect-ans{background:#fef2f2!important;border-color:var(--incorrect);color:#991b1b;font-weight:700;}
+.reason-box{display:none;margin-top:14px;padding:14px;background:#fffbeb;border-left:4px solid #f59e0b;border-radius:10px;font-size:13px;color:#92400e;}
+.btn-container{display:flex;justify-content:center;margin:32px 0;}
+button{padding:14px 32px;font-size:15px;font-weight:700;border:none;border-radius:14px;cursor:pointer;transition:all 0.3s;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;box-shadow:0 8px 20px -6px rgba(99,102,241,0.5);}
+button:hover{transform:translateY(-2px);box-shadow:0 12px 24px -6px rgba(99,102,241,0.6);}
+button:disabled{background:#cbd5e1;box-shadow:none;cursor:not-allowed;transform:none;}
+#results{display:none;text-align:center;margin-top:24px;padding:24px;background:#fff;border-radius:18px;border:1px solid #e2e8f0;box-shadow:0 4px 20px rgba(0,0,0,0.05);}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:650px;margin:20px auto 0;}
+@media(max-width:600px){.result-grid{grid-template-columns:repeat(2,1fr)}}
+.rg-item{background:#f8fafc;padding:14px;border-radius:12px;border:1px solid #e2e8f0;}
+.rg-label{font-size:10px;color:#64748b;text-transform:uppercase;letter-spacing:1px;font-weight:700;}
+.rg-value{font-size:24px;font-weight:800;color:#1e293b;}
+.rg-item.highlight{background:linear-gradient(135deg,#1e293b,#334155);border:none;color:#fff;}
+.rg-item.highlight .rg-label{color:#cbd5e1;}
+.rg-item.highlight .rg-value{color:#fff;}
+#answer-review{display:none;margin-top:32px;padding:24px;background:#fff;border-radius:18px;border:1px solid #e2e8f0;}
+.review-card{background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:14px;border-left:5px solid #cbd5e1;}
+.review-card.correct{border-left-color:var(--correct);}
+.review-card.wrong{border-left-color:var(--incorrect);}
+.review-card.skipped{border-left-color:var(--skipped);}
+.review-q{font-weight:700;margin-bottom:10px;font-size:14px;}
+.review-opt{padding:8px 12px;margin:6px 0;border-radius:8px;font-size:13px;background:#fff;}
+.review-opt.user-wrong{background:#fef2f2;border:1px solid var(--incorrect);}
+.review-opt.correct-answer{background:#ecfdf5;border:2px solid var(--correct);font-weight:700;}
+.review-reason{margin-top:10px;padding:10px;background:#fef3c7;border-radius:8px;font-size:12px;color:#92400e;}
+.status-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;color:#fff;margin-left:6px;}
+.status-correct{background:var(--correct);}
+.status-wrong{background:var(--incorrect);}
+.status-skipped{background:var(--skipped);}
+.session-card{background:#f8fafc;border-radius:14px;padding:16px;margin-bottom:14px;border-left:4px solid var(--primary);}
+</style>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
 </head>
 <body>
 <div class="container">
-    <div class="header">
-        <h1>PHYSICS PRO - MODEL PAPER</h1>
-        <div class="header-info">BSEB Class 12th | Total Marks: 70</div>
-    </div>
-
-    <h2>SECTION - A : Objective Type Questions</h2>
-    <div id="mcq-container"></div>
-
-    <div id="results">
-        <h3 style="margin-top:0;">📊 Exam Analysis</h3>
-        <div class="result-grid">
-            <div class="rg-item"><div class="rg-label">Attempted</div><div class="rg-value"><span id="attempted-display">0</span>/70</div></div>
-            <div class="rg-item"><div class="rg-label">Correct</div><div class="rg-value" style="color: var(--correct);" id="score-display">0</div></div>
-            <div class="rg-item"><div class="rg-label">Wrong</div><div class="rg-value" style="color: var(--incorrect);" id="wrong-display">0</div></div>
-            <div class="rg-item"><div class="rg-label">Skipped</div><div class="rg-value" id="skipped-display">70</div></div>
-            <div class="rg-item highlight"><div class="rg-label">Marks Obtained</div><div class="rg-value"><span id="marks-display">0</span>/70</div></div>
-            <div class="rg-item" id="time-item" style="display:none;"><div class="rg-label">Time Taken</div><div class="rg-value" id="time-display" style="font-size:16px;">-</div></div>
-        </div>
-    </div>
-
-    <div class="btn-container">
-        <button type="button" id="submit-btn" class="btn-submit">Finish Test</button>
-    </div>
-
-    <div id="answer-review">
-        <h2>📋 Answer Review & Solutions</h2>
-        <p style="text-align:center; color:#64748b; margin-top:-10px;">Detailed analysis of all questions</p>
-        <div id="review-list"></div>
-    </div>
-
-    <div id="admin-panel">
-        <h2>🔒 Secure Admin Dashboard</h2>
-        <div class="admin-controls">
-            <span id="fb-connection-status" class="conn-status conn-offline">⚫ Connecting…</span>
-            <button onclick="refreshAdmin(true)" style="background:#10b981; color:white;">🔄 Refresh Now</button>
-            <button onclick="document.getElementById('admin-panel').style.display='none'" style="background:#475569; color:white;">Close Panel</button>
-        </div>
-
-        <h3 style="text-align:left; font-size:16px; margin-top:20px;">Your Current Device Node:</h3>
-        <div id="user-device-info" class="device-info"></div>
-
-        <div class="admin-stats">
-            <div class="admin-stat"><div class="num" id="adm-devices">0</div><div class="lbl">Total Devices</div></div>
-            <div class="admin-stat"><div class="num" id="adm-active">0</div><div class="lbl">Active (5 min)</div></div>
-            <div class="admin-stat"><div class="num" id="adm-visits">0</div><div class="lbl">Total Visits</div></div>
-            <div class="admin-stat"><div class="num" id="adm-submits">0</div><div class="lbl">Total Submits</div></div>
-            <div class="admin-stat"><div class="num" id="adm-best">0</div><div class="lbl">Highest Score</div></div>
-        </div>
-        <div style="overflow-x:auto;">
-            <table>
-                <thead>
-                    <tr><th>#</th><th>Device ID</th><th>Live</th><th>Visits</th><th>Submits</th><th>Best</th><th>Last</th><th>Location</th><th>Last Seen (IST)</th></tr>
-                </thead>
-                <tbody id="admin-device-body"></tbody>
-            </table>
-        </div>
-        <div id="admin-last-update"></div>
-    </div>
-
-    <div id="section-b">
-        <h2>SECTION - B : Subjective Questions</h2>
-        <div id="short-ans-container"><h3>Short Answer Type Questions (2 Marks)</h3></div>
-        <div id="long-ans-container"><h3>Long Answer Type Questions (5 Marks)</h3></div>
-    </div>
+<h1>PHYSICS MODEL PAPER</h1>
+<div class="header-info">BSEB Class 12th | Total Marks: 70</div>
+<h2>SECTION A : Objective Questions</h2>
+<div id="mcq-container"></div>
+<div id="results">
+<h3 style="margin-top:0;">Your Score</h3>
+<div class="result-grid">
+<div class="rg-item"><div class="rg-label">Attempted</div><div class="rg-value"><span id="attempted-display">0</span>/70</div></div>
+<div class="rg-item"><div class="rg-label">Correct</div><div class="rg-value" style="color:#10b981;" id="score-display">0</div></div>
+<div class="rg-item"><div class="rg-label">Wrong</div><div class="rg-value" style="color:#ef4444;" id="wrong-display">0</div></div>
+<div class="rg-item"><div class="rg-label">Skipped</div><div class="rg-value" id="skipped-display">70</div></div>
+<div class="rg-item highlight"><div class="rg-label">Marks</div><div class="rg-value"><span id="marks-display">0</span>/70</div></div>
+<div class="rg-item" id="time-item" style="display:none;"><div class="rg-label">Time</div><div class="rg-value" id="time-display" style="font-size:16px;">-</div></div>
 </div>
-
-<div id="userModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn" onclick="closeModal()">&times;</span>
-        <h2 id="modal-title">Device Details</h2>
-        <div id="modal-body" class="modal-body-content"></div>
-    </div>
 </div>
-
+<div class="btn-container"><button id="submit-btn">Finish Test</button></div>
+<div id="answer-review"><h2>Answer Review</h2><div id="review-list"></div></div>
+<div id="section-b" style="margin-top:40px;border-top:2px dashed #cbd5e1;padding-top:20px;">
+<h2>SECTION B : Subjective Questions</h2>
+<div id="short-ans-container"><h3>Short Answers</h3></div>
+<div id="long-ans-container"><h3>Long Answers</h3></div>
+</div>
+</div>
 <script>
-    // ============================================================
-    // FIREBASE SETUP
-    // ============================================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyB6P7OJz58DEMvtQqe49EArG1TMoE4l0yk",
-        authDomain: "studycare-chemistry.firebaseapp.com",
-        databaseURL: "https://studycare-chemistry-default-rtdb.firebaseio.com",
-        projectId: "studycare-chemistry",
-        storageBucket: "studycare-chemistry.firebasestorage.app",
-        messagingSenderId: "693936311195",
-        appId: "1:693936311195:web:648b62c1f17b3872ffef3e",
-        measurementId: "G-2JWH252291"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    const DB_BASE = firebaseConfig.databaseURL;
+const firebaseConfig={apiKey:"AIzaSyB6P7OJz58DEMvtQqe49EArG1TMoE4l0yk",authDomain:"studycare-chemistry.firebaseapp.com",databaseURL:"https://studycare-chemistry-default-rtdb.firebaseio.com",projectId:"studycare-chemistry",storageBucket:"studycare-chemistry.firebasestorage.app",messagingSenderId:"693936311195",appId:"1:693936311195:web:648b62c1f17b3872ffef3e"};
+firebase.initializeApp(firebaseConfig);
+const database=firebase.database();
+const DB_BASE=firebaseConfig.databaseURL;
 
-    // ============================================================
-    // HELPERS (IST TIME)
-    // ============================================================
-    function nowIST() {
-        return new Date().toLocaleString('en-IN', {
-            timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit',
-            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true
-        });
-    }
-    function durationStr(sec) {
-        const m = Math.floor(sec / 60), s = sec % 60;
-        return `${m}m ${s}s`;
-    }
+function nowIST(){return new Date().toLocaleString('en-IN',{timeZone:'Asia/Kolkata',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:true});}
+function todayIST(){return new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});}
+function durationStr(sec){const m=Math.floor(sec/60),s=sec%60;return m+'m '+s+'s';}
+function withTimeout(p,ms){return Promise.race([p,new Promise((_,rej)=>setTimeout(()=>rej(new Error('timeout')),ms))]);}
 
-    // ============================================================
-    // ✅ FIX 1: DEVICE ID (unique per browser + cookie fallback)
-    // ============================================================
-    function getDeviceId() {
-        let id = null;
-        try { id = localStorage.getItem('sc_phy_device_id'); } catch(e) {}
-        if (!id) { try { id = sessionStorage.getItem('sc_phy_device_id'); } catch(e) {} }
-        if (!id) {
-            const m = document.cookie.match(/(?:^|;\s*)sc_phy_device_id=([^;]+)/);
-            if (m) id = decodeURIComponent(m[1]);
-        }
-        if (!id) {
-            const fp = [navigator.userAgent, navigator.language, navigator.platform,
-                navigator.hardwareConcurrency || 0, new Date().getTimezoneOffset(),
-                screen.colorDepth, screen.width + 'x' + screen.height].join('|');
-            let hash = 0;
-            for (let i = 0; i < fp.length; i++) hash = ((hash << 5) - hash + fp.charCodeAt(i)) | 0;
-            // ✅ random suffix => do alag phones ka ID merge nahi hoga
-            const rand = Math.random().toString(36).slice(2, 8).toUpperCase();
-            const ts = Date.now().toString(36).toUpperCase().slice(-4);
-            id = 'PHY_' + Math.abs(hash).toString(36).toUpperCase() + '_' + rand + ts;
-            try { localStorage.setItem('sc_phy_device_id', id); } catch(e) {}
-            try { sessionStorage.setItem('sc_phy_device_id', id); } catch(e) {}
-            try { document.cookie = 'sc_phy_device_id=' + encodeURIComponent(id) + '; max-age=31536000; path=/; SameSite=Lax'; } catch(e) {}
-        }
-        return id;
-    }
-    const deviceId  = getDeviceId();
-    const sessionId = 'sess_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7);
-    const deviceRef  = database.ref('physics_devices/' + deviceId);
-    const sessionRef = database.ref('physics_devices/' + deviceId + '/sessions/' + sessionId);
-    const infoRef    = deviceRef.child('info');
+function getDeviceId(){
+let id=null;try{id=localStorage.getItem('sc_phy_device_id');}catch(e){}
+if(!id){try{id=sessionStorage.getItem('sc_phy_device_id');}catch(e){}}
+if(!id){const m=document.cookie.match(/(?:^|;\s*)sc_phy_device_id=([^;]+)/);if(m)id=decodeURIComponent(m[1]);}
+if(!id){
+const fp=[navigator.userAgent,navigator.language,navigator.platform,navigator.hardwareConcurrency||0,new Date().getTimezoneOffset(),screen.colorDepth,screen.width+'x'+screen.height].join('|');
+let hash=0;for(let i=0;i<fp.length;i++)hash=((hash<<5)-hash+fp.charCodeAt(i))|0;
+const rand=Math.random().toString(36).slice(2,8).toUpperCase();
+const ts=Date.now().toString(36).toUpperCase().slice(-4);
+id='PHY_'+Math.abs(hash).toString(36).toUpperCase()+'_'+rand+ts;
+try{localStorage.setItem('sc_phy_device_id',id);}catch(e){}
+try{sessionStorage.setItem('sc_phy_device_id',id);}catch(e){}
+try{document.cookie='sc_phy_device_id='+encodeURIComponent(id)+'; max-age=31536000; path=/; SameSite=Lax';}catch(e){}
+}
+return id;
+}
+const deviceId=getDeviceId();
+const sessionId='sess_'+Date.now()+'_'+Math.random().toString(36).slice(2,7);
+const deviceRef=database.ref('devices/'+deviceId);
+const sessionRef=database.ref('devices/'+deviceId+'/sessions/'+sessionId);
+const infoRef=deviceRef.child('info');
 
-    // ============================================================
-    // STATE
-    // ============================================================
-    const startTime = new Date();
-    let isSubmitted = false;
-    let score = 0;
-    const attemptedQuestions = new Set();
-    const userAnswers = {};
-    let userIP = "Pending", userLocation = "Unknown", deviceDetails = "Unknown Device";
-    let adminListener = null, allDevicesCache = [];
-    let isFirebaseConnected = false;
-    let lastRestFallback = 0;
+const startTime=new Date();
+let isSubmitted=false,score=0;
+const attemptedQuestions=new Set();
+const userAnswers={};
+let userIP="Pending",userLocation="Unknown",deviceDetails="Unknown Device";
+let isFirebaseConnected=false,lastRestFallback=0;
 
-    // ============================================================
-    // ✅ FIX 2: REST FALLBACK (Opera Mini / WebSocket-blocked networks)
-    //         Uses plain HTTPS PUT (bypasses WebSocket limits)
-    // ============================================================
-    function restFallback(pathSuffix, data) {
-        const now = Date.now();
-        if (now - lastRestFallback < 8000) return; // throttle
-        lastRestFallback = now;
-        const url = `${DB_BASE}/physics_devices/${deviceId}${pathSuffix}.json`;
-        fetch(url, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        }).then(() => console.log('✅ REST fallback OK'))
-          .catch(e => console.warn('REST fallback failed:', e));
-    }
+function restFallback(path,data){
+const now=Date.now();if(now-lastRestFallback<8000)return;lastRestFallback=now;
+fetch(DB_BASE+'/devices/'+deviceId+path+'.json',{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).catch(()=>{});
+}
 
-    // ============================================================
-    // ✅ FIX 3: updateDeviceMeta — call IMMEDIATELY + safe
-    // ============================================================
-    function updateDeviceMeta(extra = {}) {
-        const data = {
-            deviceId,
-            ip: userIP,
-            location: userLocation,
-            device: deviceDetails,
-            os: navigator.platform || 'Unknown',
-            ua: navigator.userAgent,
-            lastSeen: nowIST(),
-            lastSeenTs: Date.now(),
-            online: true,
-            ...extra
-        };
-        infoRef.update(data).catch(err => {
-            console.warn('SDK meta write failed → REST fallback', err);
-            restFallback('/info', data);
-        });
-        return data;
-    }
+function updateDeviceMeta(extra){
+const utmData={};
+const params=new URLSearchParams(window.location.search);
+['utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(k=>{if(params.get(k))utmData[k]=params.get(k);});
+if(!utmData.utm_source){utmData.utm_source='direct';utmData.utm_medium='none';}
+utmData.capturedAt=nowIST();utmData.capturedDate=todayIST();
 
-    // ✅ Register device IMMEDIATELY on page load (before any async wait)
-    updateDeviceMeta();
+const data=Object.assign({
+deviceId,ip:userIP,location:userLocation,device:deviceDetails,os:navigator.platform||'Unknown',
+ua:navigator.userAgent,screen:screen.width+'x'+screen.height,lang:navigator.language,
+utm:utmData,lastSeen:nowIST(),lastSeenTs:Date.now(),online:true
+},extra||{});
+infoRef.update(data).catch(err=>{restFallback('/info',data);});
+return data;
+}
+updateDeviceMeta();
 
-    // Visit count (with error callback)
-    deviceRef.child('visitCount').transaction(
-        v => (v || 0) + 1,
-        (err) => { if (err) console.warn('visitCount tx error:', err); }
-    );
-    deviceRef.child('info/firstSeen').transaction(v => v || nowIST());
-    deviceRef.child('info/online').onDisconnect().set(false);
+deviceRef.child('visitCount').transaction(v=>(v||0)+1);
+deviceRef.child('info/firstSeen').transaction(v=>v||nowIST());
+deviceRef.child('info/online').onDisconnect().set(false);
 
-    // Session record
-    sessionRef.set({
-        sessionId, startTime: nowIST(), startTimestamp: Date.now(),
-        submitted: false, score: 0, attempted: 0
-    }).catch(err => {
-        console.warn('Session write failed → REST', err);
-        restFallback('/sessions/' + sessionId, { sessionId, startTime: nowIST(), startTimestamp: Date.now(), submitted: false, score: 0, attempted: 0 });
-    });
+sessionRef.set({sessionId,startTime:nowIST(),startTimestamp:Date.now(),submitted:false,score:0,attempted:0}).catch(err=>{
+restFallback('/sessions/'+sessionId,{sessionId,startTime:nowIST(),startTimestamp:Date.now(),submitted:false,score:0,attempted:0});
+});
+setInterval(()=>{if(!isSubmitted)updateDeviceMeta();},30000);
 
-    // ✅ Heartbeat: keeps lastSeen fresh even if initial write lost
-    setInterval(() => {
-        if (isSubmitted) return;
-        updateDeviceMeta();
-    }, 30000);
+withTimeout(fetch('https://ipapi.co/json/').then(r=>r.json()),5000).then(d=>{
+userIP=d.ip||"Hidden";userLocation=(d.city||'Unknown')+', '+(d.country_name||'Unknown');
+updateDeviceMeta();
+}).catch(()=>{userIP="Blocked";updateDeviceMeta();});
 
-    // ✅ Retry REST fallback once if SDK still disconnected after 8s
-    setTimeout(() => {
-        if (!isFirebaseConnected) {
-            console.log('Firebase SDK not connected → using REST fallback');
-            restFallback('/info', {
-                deviceId, ip: userIP, location: userLocation, device: deviceDetails,
-                os: navigator.platform || 'Unknown', ua: navigator.userAgent,
-                lastSeen: nowIST(), lastSeenTs: Date.now(), online: true,
-                source: 'rest_fallback'
-            });
-        }
-    }, 8000);
+async function getDeviceInfo(){
+let info=[];
+try{
+if(navigator.userAgentData){
+const h=await withTimeout(navigator.userAgentData.getHighEntropyValues(["model","platform","platformVersion"]),3000);
+if(h.model)info.push(h.model);
+if(h.platform)info.push((h.platform+' '+(h.platformVersion||'')).trim());
+const b=(navigator.userAgentData.brands||[]).find(b=>/Chrome|Edge/.test(b.brand));
+if(b)info.push(b.brand);
+}
+}catch(e){}
+if(info.length===0){
+if(/Android/.test(navigator.userAgent))info.push("Android");
+else if(/iPhone|iPad/.test(navigator.userAgent))info.push("iOS");
+else if(/Windows/.test(navigator.userAgent))info.push("Windows");
+else if(/Macintosh/.test(navigator.userAgent))info.push("MacOS");
+else info.push("Unknown");
+}
+deviceDetails=info.join(" | ");
+updateDeviceMeta();
+}
+getDeviceInfo();
 
-    // ============================================================
-    // IP & DEVICE INFO (with timeouts, non-blocking)
-    // ============================================================
-    function withTimeout(promise, ms) {
-        return Promise.race([promise, new Promise((_, rej) => setTimeout(() => rej(new Error('timeout')), ms))]);
-    }
+database.ref('.info/connected').on('value',snap=>{isFirebaseConnected=!!snap.val();});
 
-    withTimeout(fetch('https://ipapi.co/json/').then(r => r.json()), 5000)
-        .then(d => {
-            userIP = d.ip || "Hidden";
-            userLocation = `${d.city || 'Unknown'}, ${d.country_name || 'Unknown'}`;
-            updateDeviceMeta();
-            renderDeviceInfoBox();
-        })
-        .catch(() => { userIP = "Blocked"; userLocation = "Unknown"; updateDeviceMeta(); });
+const mcqData=[
+{id:1,q:"The SI unit of electric flux is:",options:{A:"N C⁻¹",B:"V m⁻¹",C:"N m² C⁻¹",D:"C m⁻²"},ans:"C",reason:"Flux = E.A = (N/C) * m² = N m² C⁻¹."},
+{id:2,q:"A dielectric slab is inserted in a capacitor. Its capacitance:",options:{A:"Increases",B:"Decreases",C:"Remains same",D:"Becomes zero"},ans:"A",reason:"C = Kε₀A/d. Since K > 1, C increases."},
+{id:3,q:"Drift velocity of electrons is inversely proportional to:",options:{A:"Current",B:"Area of cross-section",C:"Length",D:"Resistance"},ans:"B",reason:"I = neAv_d, so v_d ∝ 1/A."},
+{id:4,q:"Kirchhoff's junction rule is based on conservation of:",options:{A:"Energy",B:"Charge",C:"Momentum",D:"Mass"},ans:"B",reason:"Sum of currents entering a junction equals sum leaving (Charge conservation)."},
+{id:5,q:"The resistance of an ideal ammeter is:",options:{A:"Zero",B:"Infinite",C:"Equal to circuit",D:"None"},ans:"A",reason:"Ideal ammeter has zero resistance to not affect the circuit."},
+{id:6,q:"Magnetic field inside a long solenoid is:",options:{A:"Zero",B:"Uniform",C:"Non-uniform",D:"Inversely proportional to length"},ans:"B",reason:"B = μ₀nI, it is uniform inside."},
+{id:7,q:"Lenz's law is a consequence of conservation of:",options:{A:"Charge",B:"Momentum",C:"Energy",D:"Magnetic flux"},ans:"C",reason:"The induced current opposes the change, conserving energy."},
+{id:8,q:"A transformer works on the principle of:",options:{A:"Self induction",B:"Mutual induction",C:"Eddy currents",D:"Hysteresis"},ans:"B",reason:"It transfers energy via mutual induction between coils."},
+{id:9,q:"The SI unit of magnetic flux is:",options:{A:"Tesla",B:"Weber",C:"Henry",D:"Gauss"},ans:"B",reason:"Magnetic flux is measured in Weber (Wb)."},
+{id:10,q:"In an AC circuit, the power factor is maximum when:",options:{A:"Circuit is purely resistive",B:"Circuit is purely inductive",C:"Circuit is purely capacitive",D:"Impedance is maximum"},ans:"A",reason:"Power factor (cos φ) = 1 when φ = 0 (Resistive)."},
+{id:11,q:"Which of the following has the highest frequency?",options:{A:"Gamma rays",B:"X-rays",C:"UV rays",D:"Microwaves"},ans:"A",reason:"Gamma rays are at the highest frequency end of the EM spectrum."},
+{id:12,q:"The focal length of a plane mirror is:",options:{A:"Zero",B:"Infinity",C:"Equal to object distance",D:"Negative"},ans:"B",reason:"A plane mirror has infinite radius of curvature, hence infinite focal length."},
+{id:13,q:"In Young's double slit experiment, the fringe width is directly proportional to:",options:{A:"Wavelength",B:"Slit separation",C:"Distance to screen (inversely)",D:"Intensity"},ans:"A",reason:"Fringe width β = λD/d, so β ∝ λ."},
+{id:14,q:"The phenomenon of bending of light around obstacles is called:",options:{A:"Reflection",B:"Refraction",C:"Diffraction",D:"Polarization"},ans:"C",reason:"Diffraction is the bending of waves around obstacles."},
+{id:15,q:"A convex lens behaves as a diverging lens when placed in:",options:{A:"Air",B:"Water",C:"Medium of higher refractive index",D:"Vacuum"},ans:"C",reason:"If μ_medium > μ_lens, the lens acts as a diverging lens."},
+{id:16,q:"The photoelectric effect supports the:",options:{A:"Wave nature of light",B:"Particle nature of light",C:"Dual nature of light",D:"Electromagnetic nature"},ans:"B",reason:"Photoelectric effect can only be explained by the particle (photon) theory."},
+{id:17,q:"Work function of a metal depends on:",options:{A:"Frequency of light",B:"Intensity of light",C:"Nature of the metal",D:"Velocity of electrons"},ans:"C",reason:"Work function is an intrinsic property of the metal's surface."},
+{id:18,q:"The de-Broglie wavelength of an electron accelerated by V volts is:",options:{A:"12.27/√V Å",B:"12.27 V Å",C:"√V/12.27 Å",D:"1.227 V Å"},ans:"A",reason:"Standard formula: λ = 12.27/√V Å."},
+{id:19,q:"In a hydrogen atom, the radius of the nth orbit is proportional to:",options:{A:"n",B:"n²",C:"1/n",D:"1/n²"},ans:"B",reason:"r ∝ n² (Bohr's postulate)."},
+{id:20,q:"The energy of an electron in the ground state of a hydrogen atom is:",options:{A:"-13.6 eV",B:"-3.4 eV",C:"-1.51 eV",D:"0 eV"},ans:"A",reason:"E = -13.6 / n². For n=1, E = -13.6 eV."},
+{id:21,q:"Nuclear force is:",options:{A:"Charge dependent",B:"Long range",C:"Short range",D:"Electromagnetic"},ans:"C",reason:"Nuclear forces are short-range (few fm)."},
+{id:22,q:"The mass defect in a nucleus is related to its:",options:{A:"Charge",B:"Binding energy",C:"Volume",D:"Density"},ans:"B",reason:"E = Δm c², mass defect converts into binding energy."},
+{id:23,q:"Which of the following is a scalar quantity?",options:{A:"Electric field",B:"Magnetic field",C:"Electric potential",D:"Force"},ans:"C",reason:"Electric potential is a scalar (has magnitude only)."},
+{id:24,q:"The capacitance of a parallel plate capacitor is C. If distance is halved, new capacitance is:",options:{A:"C/2",B:"C",C:"2C",D:"4C"},ans:"C",reason:"C ∝ 1/d. Halving d doubles C."},
+{id:25,q:"Ohm's law is valid for:",options:{A:"Semiconductors",B:"Metallic conductors",C:"Diodes",D:"Electrolytes"},ans:"B",reason:"Ohm's law V=IR works for metallic conductors at constant temperature."},
+{id:26,q:"The unit of resistivity is:",options:{A:"Ohm",B:"Ohm-m",C:"Ohm/m",D:"Siemens"},ans:"B",reason:"ρ = RA/L, so unit is Ohm-meter (Ωm)."},
+{id:27,q:"A charged particle moving parallel to a magnetic field experiences force:",options:{A:"Maximum",B:"Minimum",C:"Zero",D:"Infinite"},ans:"C",reason:"F = qvB sinθ. If parallel, θ = 0, sin0 = 0, F = 0."},
+{id:28,q:"The magnetic susceptibility of a diamagnetic material is:",options:{A:"Positive and small",B:"Negative and small",C:"Positive and large",D:"Zero"},ans:"B",reason:"Diamagnetic materials have small negative susceptibility (χ < 0)."},
+{id:29,q:"Eddy currents are reduced by using:",options:{A:"Thick metal cores",B:"Laminated cores",C:"Copper cores",D:"Iron cores"},ans:"B",reason:"Laminated cores increase resistance and reduce eddy currents."},
+{id:30,q:"The average value of AC over a complete cycle is:",options:{A:"I₀",B:"I₀/√2",C:"I₀/2",D:"Zero"},ans:"D",reason:"The positive and negative halves cancel out, so average is zero."},
+{id:31,q:"The refractive index of a medium is 1.5. The speed of light in it is:",options:{A:"2×10⁸ m/s",B:"3×10⁸ m/s",C:"1.5×10⁸ m/s",D:"4.5×10⁸ m/s"},ans:"A",reason:"v = c/μ = 3×10⁸ / 1.5 = 2×10⁸ m/s."},
+{id:32,q:"Total internal reflection occurs when light travels from:",options:{A:"Denser to rarer medium",B:"Rarer to denser medium",C:"Air to glass",D:"Water to glass"},ans:"A",reason:"TIR happens when light goes from optically denser to rarer medium."},
+{id:33,q:"The power of a lens is 1 Diopter. Its focal length is:",options:{A:"1 cm",B:"10 cm",C:"1 m",D:"100 m"},ans:"C",reason:"P = 1/f (in meters). So f = 1/1 = 1 meter."},
+{id:34,q:"The angle of dip at the magnetic equator is:",options:{A:"90°",B:"45°",C:"0°",D:"30°"},ans:"C",reason:"At the equator, the earth's magnetic field is horizontal, so dip angle is 0°."},
+{id:35,q:"Which of the following is an electromagnetic wave?",options:{A:"Sound wave",B:"Light wave",C:"Water wave",D:"Seismic wave"},ans:"B",reason:"Light is an EM wave; others are mechanical waves."},
+{id:36,q:"The unit of Planck's constant is:",options:{A:"J s",B:"J/s",C:"W/s",D:"J s⁻²"},ans:"A",reason:"E = hν, so h = E/ν = J/Hz = J s."},
+{id:37,q:"The binding energy per nucleon is maximum for:",options:{A:"Uranium",B:"Iron (Fe-56)",C:"Hydrogen",D:"Helium"},ans:"B",reason:"Fe-56 has the maximum binding energy per nucleon (~8.8 MeV)."},
+{id:38,q:"In an NPN transistor, the majority charge carriers in the base are:",options:{A:"Electrons",B:"Holes",C:"Both",D:"None"},ans:"B",reason:"In NPN, Base is P-type, so majority carriers are holes."},
+{id:39,q:"A Zener diode is used as a:",options:{A:"Rectifier",B:"Amplifier",C:"Voltage regulator",D:"Oscillator"},ans:"C",reason:"Zener diode works in reverse breakdown to regulate voltage."},
+{id:40,q:"The output of a NAND gate is 0 when:",options:{A:"All inputs are 0",B:"All inputs are 1",C:"Any input is 0",D:"Any input is 1"},ans:"B",reason:"NAND is NOT of AND. AND is 1 only when all inputs are 1, so NAND is 0 then."},
+{id:41,q:"Which of the following has negative temperature coefficient of resistance?",options:{A:"Copper",B:"Iron",C:"Semiconductor",D:"Aluminum"},ans:"C",reason:"Semiconductors have negative temperature coefficient."},
+{id:42,q:"Dimensional formula of electric field is:",options:{A:"[MLT⁻³A⁻¹]",B:"[ML²T⁻³A⁻¹]",C:"[MLT⁻²A⁻¹]",D:"[ML²T⁻²A⁻¹]"},ans:"A",reason:"E = F/q = [MLT⁻²]/[AT] = [MLT⁻³A⁻¹]."},
+{id:43,q:"Two capacitors of 2μF and 3μF are in series. Equivalent capacitance is:",options:{A:"5μF",B:"1μF",C:"1.2μF",D:"6μF"},ans:"C",reason:"1/C = 1/2 + 1/3 = 5/6 => C = 6/5 = 1.2μF."},
+{id:44,q:"The mutual inductance of two coils depends on:",options:{A:"Current in coil",B:"Voltage across coil",C:"Distance between coils",D:"Resistance of coil"},ans:"C",reason:"M depends on geometry, number of turns, and distance/alignment."},
+{id:45,q:"The frequency of an AC is 50 Hz. Its angular frequency is:",options:{A:"50 rad/s",B:"100π rad/s",C:"50π rad/s",D:"100 rad/s"},ans:"B",reason:"ω = 2πf = 2π(50) = 100π rad/s."},
+{id:46,q:"A ray of light passing through the optical centre of a lens:",options:{A:"Deviates towards base",B:"Deviates towards apex",C:"Goes undeviated",D:"Reflects back"},ans:"C",reason:"Ray through the optical centre goes straight (undeviated)."},
+{id:47,q:"The momentum of a photon of energy E is:",options:{A:"E/c",B:"Ec",C:"E/c²",D:"c/E"},ans:"A",reason:"For a photon, E = pc, so p = E/c."},
+{id:48,q:"Nuclear fission is best explained by:",options:{A:"Liquid drop model",B:"Shell model",C:"Bohr model",D:"Rutherford model"},ans:"A",reason:"The liquid drop model explains the splitting of a heavy nucleus."},
+{id:49,q:"In a p-type semiconductor, the acceptor impurity is:",options:{A:"Phosphorus",B:"Arsenic",C:"Boron",D:"Antimony"},ans:"C",reason:"Boron is a trivalent impurity (Group 13) which creates holes."},
+{id:50,q:"The Boolean expression for OR gate is:",options:{A:"Y = A + B",B:"Y = A · B",C:"Y = A̅",D:"Y = A ⊕ B"},ans:"A",reason:"OR gate is represented by logical addition (Y = A + B)."},
+{id:51,q:"Gauss's Law is valid for:",options:{A:"Any closed surface",B:"Only spherical surface",C:"Only cylindrical surface",D:"Only plane surface"},ans:"A",reason:"Gauss's law applies to any closed surface, irrespective of its shape."},
+{id:52,q:"Energy stored in a capacitor is given by:",options:{A:"CV²",B:"1/2 CV²",C:"1/2 C²V",D:"2CV²"},ans:"B",reason:"The energy stored is U = 1/2 CV²."},
+{id:53,q:"The balance condition of a Wheatstone bridge is:",options:{A:"P/Q = R/S",B:"P/R = Q/S",C:"P/Q = S/R",D:"P·Q = R·S"},ans:"A",reason:"At balance, the ratio of resistances in adjacent arms is equal: P/Q = R/S."},
+{id:54,q:"To convert a galvanometer into an ammeter, we connect:",options:{A:"High resistance in series",B:"Low resistance in parallel",C:"High resistance in parallel",D:"Low resistance in series"},ans:"B",reason:"A low resistance (shunt) is connected in parallel to bypass excess current."},
+{id:55,q:"The SI unit of self-inductance is:",options:{A:"Weber",B:"Tesla",C:"Henry",D:"Farad"},ans:"C",reason:"Self-inductance is measured in Henry (H)."},
+{id:56,q:"In a purely inductive AC circuit, the power factor is:",options:{A:"1",B:"0",C:"0.5",D:"Infinite"},ans:"B",reason:"Phase difference is 90°, so cos(90°) = 0."},
+{id:57,q:"The lens maker's formula is:",options:{A:"1/f = (μ-1)(1/R₁ - 1/R₂)",B:"1/f = (μ+1)(1/R₁ + 1/R₂)",C:"1/f = (μ-1)(1/R₁ + 1/R₂)",D:"1/f = μ(1/R₁ - 1/R₂)"},ans:"A",reason:"The lens maker's formula is 1/f = (μ-1)(1/R₁ - 1/R₂)."},
+{id:58,q:"The phenomenon of polarization of light proves that light waves are:",options:{A:"Longitudinal",B:"Transverse",C:"Mechanical",D:"Electromagnetic"},ans:"B",reason:"Only transverse waves can be polarized."},
+{id:59,q:"A photocell works on the principle of:",options:{A:"Photoelectric effect",B:"Thermionic emission",C:"Field emission",D:"Secondary emission"},ans:"A",reason:"Photocells convert light energy into electrical energy using the photoelectric effect."},
+{id:60,q:"The velocity of an electron in the nth orbit of a hydrogen atom is proportional to:",options:{A:"n",B:"n²",C:"1/n",D:"1/n²"},ans:"C",reason:"v ∝ 1/n according to Bohr's model."},
+{id:61,q:"If the half-life of a radioactive substance is T, its decay constant is:",options:{A:"0.693/T",B:"T/0.693",C:"0.693 × T",D:"1/T"},ans:"A",reason:"λ = 0.693 / T_{1/2}."},
+{id:62,q:"Which logic gate gives output 1 only when both inputs are 0?",options:{A:"AND",B:"OR",C:"NOR",D:"NAND"},ans:"C",reason:"NOR gate is the inverse of OR. Output is 1 only when all inputs are 0."},
+{id:63,q:"A full-wave rectifier uses how many diodes?",options:{A:"1",B:"2",C:"3",D:"4"},ans:"B",reason:"A center-tap full-wave rectifier uses 2 diodes."},
+{id:64,q:"The electric potential inside a hollow charged spherical shell is:",options:{A:"Zero",B:"Constant and equal to surface",C:"Inversely proportional to distance",D:"Maximum at center"},ans:"B",reason:"Inside a hollow charged sphere, the potential is constant and equals the surface potential."},
+{id:65,q:"A potentiometer is used to measure:",options:{A:"Resistance",B:"Current",C:"EMF",D:"Power"},ans:"C",reason:"A potentiometer measures the EMF of a cell accurately without drawing current."},
+{id:66,q:"An AC generator works on the principle of:",options:{A:"Mutual induction",B:"Electromagnetic induction",C:"Self induction",D:"Eddy currents"},ans:"B",reason:"It converts mechanical energy to electrical energy via electromagnetic induction."},
+{id:67,q:"The splitting of white light into its constituent colors is called:",options:{A:"Reflection",B:"Refraction",C:"Dispersion",D:"Scattering"},ans:"C",reason:"Dispersion occurs because different colors have different refractive indices."},
+{id:68,q:"The nucleus of an atom consists of:",options:{A:"Protons only",B:"Neutrons only",C:"Protons and Neutrons",D:"Protons and Electrons"},ans:"C",reason:"Nucleons are protons and neutrons."},
+{id:69,q:"In a purely capacitive AC circuit, the current:",options:{A:"Lags voltage by 90°",B:"Leads voltage by 90°",C:"Is in phase with voltage",D:"Leads voltage by 180°"},ans:"B",reason:"Current leads voltage by 90° (π/2) in a pure capacitor."},
+{id:70,q:"The dimensional formula of magnetic field (B) is:",options:{A:"[MT⁻²A⁻¹]",B:"[MLT⁻²A⁻¹]",C:"[MLT⁻¹A⁻¹]",D:"[ML²T⁻²A⁻¹]"},ans:"A",reason:"F = qvB => B = F/qv = [MLT⁻²]/[AT][LT⁻¹] = [MT⁻²A⁻¹]."}
+];
 
-    async function getDeviceInfo() {
-        let info = [];
-        try {
-            if (navigator.userAgentData) {
-                const h = await withTimeout(
-                    navigator.userAgentData.getHighEntropyValues(["model", "platform", "platformVersion"]),
-                    3000
-                );
-                if (h.model) info.push(h.model);
-                if (h.platform) info.push(`${h.platform} ${h.platformVersion || ''}`.trim());
-                const b = (navigator.userAgentData.brands || []).find(b => /Chrome|Edge/.test(b.brand));
-                if (b) info.push(b.brand);
-            }
-        } catch (e) {}
-        if (info.length === 0) {
-            if (/Android/.test(navigator.userAgent)) info.push("Android");
-            else if (/iPhone|iPad/.test(navigator.userAgent)) info.push("iOS");
-            else if (/Windows/.test(navigator.userAgent)) info.push("Windows");
-            else if (/Macintosh/.test(navigator.userAgent)) info.push("MacOS");
-            else info.push("Unknown Device");
-        }
-        deviceDetails = info.join(" | ");
-        renderDeviceInfoBox();
-        updateDeviceMeta();
-    }
-    getDeviceInfo();
+const shortAnsData=[
+{id:1,q:"Define electric dipole moment.",a:"p = q × 2a. SI unit: C·m."},
+{id:2,q:"Why resistance is inversely proportional to area?",a:"R = ρL/A. Larger area means less collisions."},
+{id:3,q:"State Lenz's Law.",a:"Induced emf opposes the change in flux."},
+{id:4,q:"What are EM waves?",a:"Oscillating electric and magnetic fields."},
+{id:5,q:"Condition for TIR.",a:"Denser to rarer, angle > critical angle."},
+{id:6,q:"Define Work Function.",a:"Min energy to eject an electron."},
+{id:7,q:"Bohr's quantization condition.",a:"mvr = nh/2π."},
+{id:8,q:"Mass defect.",a:"Difference between mass of nucleons and nucleus."},
+{id:9,q:"Intrinsic vs Extrinsic semiconductor.",a:"Pure vs doped."},
+{id:10,q:"Power of lens.",a:"P = 1/f. SI unit: Diopter (D)."},
+{id:11,q:"Principle of transformer.",a:"Mutual induction."},
+{id:12,q:"Rectification.",a:"AC to DC conversion."},
+{id:13,q:"Coulomb's Law.",a:"F = kq1q2/r²."},
+{id:14,q:"Focal length of plane mirror.",a:"Infinity."},
+{id:15,q:"Binding Energy.",a:"Energy to separate nucleons."}
+];
 
-    // Firebase connection monitor (helps admin see if their side is live)
-    database.ref('.info/connected').on('value', snap => {
-        isFirebaseConnected = !!snap.val();
-        const el = document.getElementById('fb-connection-status');
-        if (el) {
-            if (isFirebaseConnected) {
-                el.className = 'conn-status conn-online';
-                el.textContent = '🟢 Firebase Connected';
-            } else {
-                el.className = 'conn-status conn-offline';
-                el.textContent = '🔴 Firebase Offline';
-            }
-        }
-    });
+const longAnsData=[
+{id:16,q:"Derive capacitance of parallel plate capacitor.",a:"C = ε₀A/d. With dielectric C' = Kε₀A/d."},
+{id:17,q:"Biot-Savart Law & circular loop.",a:"B = (μ₀ I R²) / (2(R² + x²)^(3/2)). Center: B = μ₀I / 2R."},
+{id:18,q:"Interference & YDSE fringe width.",a:"β = λD/d."},
+{id:19,q:"Photoelectric effect & Einstein eq.",a:"K_max = hν - Φ₀."},
+{id:20,q:"p-n junction diode forward/reverse bias.",a:"Forward: low resistance, Reverse: high resistance."}
+];
 
-    function renderDeviceInfoBox() {
-        document.getElementById('user-device-info').innerHTML = `
-            <div><b>🌐 IP:</b> ${userIP} (${userLocation})</div>
-            <div><b>📱 Device:</b> ${deviceDetails}</div>
-            <div><b>🆔 Device ID:</b> ${deviceId}</div>
-            <div><b>🔗 Firebase:</b> ${isFirebaseConnected ? '🟢 Connected' : '🔴 Offline'}</div>
-            <div><b>🕐 IST Time:</b> ${nowIST()}</div>
-        `;
-    }
+const mcqContainer=document.getElementById('mcq-container');
+mcqData.forEach(item=>{
+const card=document.createElement('div');card.className='question-card';
+let opts='';
+for(const [k,v] of Object.entries(item.options)){
+opts+='<div class="option-btn" id="opt-'+item.id+'-'+k+'" onclick="selectOption('+item.id+',\''+k+'\',\''+item.ans+'\')"><strong>('+k+')</strong>&nbsp; '+v+'</div>';
+}
+card.innerHTML='<div class="question-text">'+item.id+'. '+item.q+'</div><div class="options">'+opts+'</div><div class="reason-box" id="reason-'+item.id+'"><strong>Reason:</strong> '+item.reason+'</div>';
+mcqContainer.appendChild(card);
+});
 
-    // ============================================================
-    // 70 MCQs
-    // ============================================================
-    const mcqData = [
-        { id: 1, q: "The SI unit of electric flux is:", options: { A: "N C⁻¹", B: "V m⁻¹", C: "N m² C⁻¹", D: "C m⁻²" }, ans: "C", reason: "Flux = E.A = (N/C) * m² = N m² C⁻¹." },
-        { id: 2, q: "A dielectric slab is inserted in a capacitor. Its capacitance:", options: { A: "Increases", B: "Decreases", C: "Remains same", D: "Becomes zero" }, ans: "A", reason: "C = Kε₀A/d. Since K > 1, C increases." },
-        { id: 3, q: "Drift velocity of electrons is inversely proportional to:", options: { A: "Current", B: "Area of cross-section", C: "Length", D: "Resistance" }, ans: "B", reason: "I = neAv_d, so v_d ∝ 1/A." },
-        { id: 4, q: "Kirchhoff's junction rule is based on conservation of:", options: { A: "Energy", B: "Charge", C: "Momentum", D: "Mass" }, ans: "B", reason: "Sum of currents entering a junction equals sum leaving (Charge conservation)." },
-        { id: 5, q: "The resistance of an ideal ammeter is:", options: { A: "Zero", B: "Infinite", C: "Equal to circuit", D: "None" }, ans: "A", reason: "Ideal ammeter has zero resistance to not affect the circuit." },
-        { id: 6, q: "Magnetic field inside a long solenoid is:", options: { A: "Zero", B: "Uniform", C: "Non-uniform", D: "Inversely proportional to length" }, ans: "B", reason: "B = μ₀nI, it is uniform inside." },
-        { id: 7, q: "Lenz's law is a consequence of conservation of:", options: { A: "Charge", B: "Momentum", C: "Energy", D: "Magnetic flux" }, ans: "C", reason: "The induced current opposes the change, conserving energy." },
-        { id: 8, q: "A transformer works on the principle of:", options: { A: "Self induction", B: "Mutual induction", C: "Eddy currents", D: "Hysteresis" }, ans: "B", reason: "It transfers energy via mutual induction between coils." },
-        { id: 9, q: "The SI unit of magnetic flux is:", options: { A: "Tesla", B: "Weber", C: "Henry", D: "Gauss" }, ans: "B", reason: "Magnetic flux is measured in Weber (Wb)." },
-        { id: 10, q: "In an AC circuit, the power factor is maximum when:", options: { A: "Circuit is purely resistive", B: "Circuit is purely inductive", C: "Circuit is purely capacitive", D: "Impedance is maximum" }, ans: "A", reason: "Power factor (cos φ) = 1 when φ = 0 (Resistive)." },
-        { id: 11, q: "Which of the following has the highest frequency?", options: { A: "Gamma rays", B: "X-rays", C: "UV rays", D: "Microwaves" }, ans: "A", reason: "Gamma rays are at the highest frequency end of the EM spectrum." },
-        { id: 12, q: "The focal length of a plane mirror is:", options: { A: "Zero", B: "Infinity", C: "Equal to object distance", D: "Negative" }, ans: "B", reason: "A plane mirror has infinite radius of curvature, hence infinite focal length." },
-        { id: 13, q: "In Young's double slit experiment, the fringe width is directly proportional to:", options: { A: "Wavelength", B: "Slit separation", C: "Distance to screen (inversely)", D: "Intensity" }, ans: "A", reason: "Fringe width β = λD/d, so β ∝ λ." },
-        { id: 14, q: "The phenomenon of bending of light around obstacles is called:", options: { A: "Reflection", B: "Refraction", C: "Diffraction", D: "Polarization" }, ans: "C", reason: "Diffraction is the bending of waves around obstacles." },
-        { id: 15, q: "A convex lens behaves as a diverging lens when placed in:", options: { A: "Air", B: "Water", C: "Medium of higher refractive index", D: "Vacuum" }, ans: "C", reason: "If μ_medium > μ_lens, the lens acts as a diverging lens." },
-        { id: 16, q: "The photoelectric effect supports the:", options: { A: "Wave nature of light", B: "Particle nature of light", C: "Dual nature of light", D: "Electromagnetic nature" }, ans: "B", reason: "Photoelectric effect can only be explained by the particle (photon) theory." },
-        { id: 17, q: "Work function of a metal depends on:", options: { A: "Frequency of light", B: "Intensity of light", C: "Nature of the metal", D: "Velocity of electrons" }, ans: "C", reason: "Work function is an intrinsic property of the metal's surface." },
-        { id: 18, q: "The de-Broglie wavelength of an electron accelerated by V volts is:", options: { A: "12.27/√V Å", B: "12.27 V Å", C: "√V/12.27 Å", D: "1.227 V Å" }, ans: "A", reason: "Standard formula: λ = 12.27/√V Å." },
-        { id: 19, q: "In a hydrogen atom, the radius of the nth orbit is proportional to:", options: { A: "n", B: "n²", C: "1/n", D: "1/n²" }, ans: "B", reason: "r ∝ n² (Bohr's postulate)." },
-        { id: 20, q: "The energy of an electron in the ground state of a hydrogen atom is:", options: { A: "-13.6 eV", B: "-3.4 eV", C: "-1.51 eV", D: "0 eV" }, ans: "A", reason: "E = -13.6 / n². For n=1, E = -13.6 eV." },
-        { id: 21, q: "Nuclear force is:", options: { A: "Charge dependent", B: "Long range", C: "Short range", D: "Electromagnetic" }, ans: "C", reason: "Nuclear forces are short-range (few fm)." },
-        { id: 22, q: "The mass defect in a nucleus is related to its:", options: { A: "Charge", B: "Binding energy", C: "Volume", D: "Density" }, ans: "B", reason: "E = Δm c², mass defect converts into binding energy." },
-        { id: 23, q: "Which of the following is a scalar quantity?", options: { A: "Electric field", B: "Magnetic field", C: "Electric potential", D: "Force" }, ans: "C", reason: "Electric potential is a scalar (has magnitude only)." },
-        { id: 24, q: "The capacitance of a parallel plate capacitor is C. If distance is halved, new capacitance is:", options: { A: "C/2", B: "C", C: "2C", D: "4C" }, ans: "C", reason: "C ∝ 1/d. Halving d doubles C." },
-        { id: 25, q: "Ohm's law is valid for:", options: { A: "Semiconductors", B: "Metallic conductors", C: "Diodes", D: "Electrolytes" }, ans: "B", reason: "Ohm's law V=IR works for metallic conductors at constant temperature." },
-        { id: 26, q: "The unit of resistivity is:", options: { A: "Ohm", B: "Ohm-m", C: "Ohm/m", D: "Siemens" }, ans: "B", reason: "ρ = RA/L, so unit is Ohm-meter (Ωm)." },
-        { id: 27, q: "A charged particle moving parallel to a magnetic field experiences force:", options: { A: "Maximum", B: "Minimum", C: "Zero", D: "Infinite" }, ans: "C", reason: "F = qvB sinθ. If parallel, θ = 0, sin0 = 0, F = 0." },
-        { id: 28, q: "The magnetic susceptibility of a diamagnetic material is:", options: { A: "Positive and small", B: "Negative and small", C: "Positive and large", D: "Zero" }, ans: "B", reason: "Diamagnetic materials have small negative susceptibility (χ < 0)." },
-        { id: 29, q: "Eddy currents are reduced by using:", options: { A: "Thick metal cores", B: "Laminated cores", C: "Copper cores", D: "Iron cores" }, ans: "B", reason: "Laminated cores increase resistance and reduce eddy currents." },
-        { id: 30, q: "The average value of AC over a complete cycle is:", options: { A: "I₀", B: "I₀/√2", C: "I₀/2", D: "Zero" }, ans: "D", reason: "The positive and negative halves cancel out, so average is zero." },
-        { id: 31, q: "The refractive index of a medium is 1.5. The speed of light in it is:", options: { A: "2×10⁸ m/s", B: "3×10⁸ m/s", C: "1.5×10⁸ m/s", D: "4.5×10⁸ m/s" }, ans: "A", reason: "v = c/μ = 3×10⁸ / 1.5 = 2×10⁸ m/s." },
-        { id: 32, q: "Total internal reflection occurs when light travels from:", options: { A: "Denser to rarer medium", B: "Rarer to denser medium", C: "Air to glass", D: "Water to glass" }, ans: "A", reason: "TIR happens when light goes from optically denser to rarer medium." },
-        { id: 33, q: "The power of a lens is 1 Diopter. Its focal length is:", options: { A: "1 cm", B: "10 cm", C: "1 m", D: "100 m" }, ans: "C", reason: "P = 1/f (in meters). So f = 1/1 = 1 meter." },
-        { id: 34, q: "The angle of dip at the magnetic equator is:", options: { A: "90°", B: "45°", C: "0°", D: "30°" }, ans: "C", reason: "At the equator, the earth's magnetic field is horizontal, so dip angle is 0°." },
-        { id: 35, q: "Which of the following is an electromagnetic wave?", options: { A: "Sound wave", B: "Light wave", C: "Water wave", D: "Seismic wave" }, ans: "B", reason: "Light is an EM wave; others are mechanical waves." },
-        { id: 36, q: "The unit of Planck's constant is:", options: { A: "J s", B: "J/s", C: "W/s", D: "J s⁻²" }, ans: "A", reason: "E = hν, so h = E/ν = J/Hz = J s." },
-        { id: 37, q: "The binding energy per nucleon is maximum for:", options: { A: "Uranium", B: "Iron (Fe-56)", C: "Hydrogen", D: "Helium" }, ans: "B", reason: "Fe-56 has the maximum binding energy per nucleon (~8.8 MeV)." },
-        { id: 38, q: "In an NPN transistor, the majority charge carriers in the base are:", options: { A: "Electrons", B: "Holes", C: "Both", D: "None" }, ans: "B", reason: "In NPN, Base is P-type, so majority carriers are holes." },
-        { id: 39, q: "A Zener diode is used as a:", options: { A: "Rectifier", B: "Amplifier", C: "Voltage regulator", D: "Oscillator" }, ans: "C", reason: "Zener diode works in reverse breakdown to regulate voltage." },
-        { id: 40, q: "The output of a NAND gate is 0 when:", options: { A: "All inputs are 0", B: "All inputs are 1", C: "Any input is 0", D: "Any input is 1" }, ans: "B", reason: "NAND is NOT of AND. AND is 1 only when all inputs are 1, so NAND is 0 then." },
-        { id: 41, q: "Which of the following has negative temperature coefficient of resistance?", options: { A: "Copper", B: "Iron", C: "Semiconductor", D: "Aluminum" }, ans: "C", reason: "Semiconductors have negative temperature coefficient." },
-        { id: 42, q: "Dimensional formula of electric field is:", options: { A: "[MLT⁻³A⁻¹]", B: "[ML²T⁻³A⁻¹]", C: "[MLT⁻²A⁻¹]", D: "[ML²T⁻²A⁻¹]" }, ans: "A", reason: "E = F/q = [MLT⁻²]/[AT] = [MLT⁻³A⁻¹]." },
-        { id: 43, q: "Two capacitors of 2μF and 3μF are in series. Equivalent capacitance is:", options: { A: "5μF", B: "1μF", C: "1.2μF", D: "6μF" }, ans: "C", reason: "1/C = 1/2 + 1/3 = 5/6 => C = 6/5 = 1.2μF." },
-        { id: 44, q: "The mutual inductance of two coils depends on:", options: { A: "Current in coil", B: "Voltage across coil", C: "Distance between coils", D: "Resistance of coil" }, ans: "C", reason: "M depends on geometry, number of turns, and distance/alignment." },
-        { id: 45, q: "The frequency of an AC is 50 Hz. Its angular frequency is:", options: { A: "50 rad/s", B: "100π rad/s", C: "50π rad/s", D: "100 rad/s" }, ans: "B", reason: "ω = 2πf = 2π(50) = 100π rad/s." },
-        { id: 46, q: "A ray of light passing through the optical centre of a lens:", options: { A: "Deviates towards base", B: "Deviates towards apex", C: "Goes undeviated", D: "Reflects back" }, ans: "C", reason: "Ray through the optical centre goes straight (undeviated)." },
-        { id: 47, q: "The momentum of a photon of energy E is:", options: { A: "E/c", B: "Ec", C: "E/c²", D: "c/E" }, ans: "A", reason: "For a photon, E = pc, so p = E/c." },
-        { id: 48, q: "Nuclear fission is best explained by:", options: { A: "Liquid drop model", B: "Shell model", C: "Bohr model", D: "Rutherford model" }, ans: "A", reason: "The liquid drop model explains the splitting of a heavy nucleus." },
-        { id: 49, q: "In a p-type semiconductor, the acceptor impurity is:", options: { A: "Phosphorus", B: "Arsenic", C: "Boron", D: "Antimony" }, ans: "C", reason: "Boron is a trivalent impurity (Group 13) which creates holes." },
-        { id: 50, q: "The Boolean expression for OR gate is:", options: { A: "Y = A + B", B: "Y = A · B", C: "Y = A̅", D: "Y = A ⊕ B" }, ans: "A", reason: "OR gate is represented by logical addition (Y = A + B)." },
-        { id: 51, q: "Gauss's Law is valid for:", options: { A: "Any closed surface", B: "Only spherical surface", C: "Only cylindrical surface", D: "Only plane surface" }, ans: "A", reason: "Gauss's law applies to any closed surface, irrespective of its shape." },
-        { id: 52, q: "Energy stored in a capacitor is given by:", options: { A: "CV²", B: "1/2 CV²", C: "1/2 C²V", D: "2CV²" }, ans: "B", reason: "The energy stored is U = 1/2 CV²." },
-        { id: 53, q: "The balance condition of a Wheatstone bridge is:", options: { A: "P/Q = R/S", B: "P/R = Q/S", C: "P/Q = S/R", D: "P·Q = R·S" }, ans: "A", reason: "At balance, the ratio of resistances in adjacent arms is equal: P/Q = R/S." },
-        { id: 54, q: "To convert a galvanometer into an ammeter, we connect:", options: { A: "High resistance in series", B: "Low resistance in parallel", C: "High resistance in parallel", D: "Low resistance in series" }, ans: "B", reason: "A low resistance (shunt) is connected in parallel to bypass excess current." },
-        { id: 55, q: "The SI unit of self-inductance is:", options: { A: "Weber", B: "Tesla", C: "Henry", D: "Farad" }, ans: "C", reason: "Self-inductance is measured in Henry (H)." },
-        { id: 56, q: "In a purely inductive AC circuit, the power factor is:", options: { A: "1", B: "0", C: "0.5", D: "Infinite" }, ans: "B", reason: "Phase difference is 90°, so cos(90°) = 0." },
-        { id: 57, q: "The lens maker's formula is:", options: { A: "1/f = (μ-1)(1/R₁ - 1/R₂)", B: "1/f = (μ+1)(1/R₁ + 1/R₂)", C: "1/f = (μ-1)(1/R₁ + 1/R₂)", D: "1/f = μ(1/R₁ - 1/R₂)" }, ans: "A", reason: "The lens maker's formula is 1/f = (μ-1)(1/R₁ - 1/R₂)." },
-        { id: 58, q: "The phenomenon of polarization of light proves that light waves are:", options: { A: "Longitudinal", B: "Transverse", C: "Mechanical", D: "Electromagnetic" }, ans: "B", reason: "Only transverse waves can be polarized." },
-        { id: 59, q: "A photocell works on the principle of:", options: { A: "Photoelectric effect", B: "Thermionic emission", C: "Field emission", D: "Secondary emission" }, ans: "A", reason: "Photocells convert light energy into electrical energy using the photoelectric effect." },
-        { id: 60, q: "The velocity of an electron in the nth orbit of a hydrogen atom is proportional to:", options: { A: "n", B: "n²", C: "1/n", D: "1/n²" }, ans: "C", reason: "v ∝ 1/n according to Bohr's model." },
-        { id: 61, q: "If the half-life of a radioactive substance is T, its decay constant is:", options: { A: "0.693/T", B: "T/0.693", C: "0.693 × T", D: "1/T" }, ans: "A", reason: "λ = 0.693 / T_{1/2}." },
-        { id: 62, q: "Which logic gate gives output 1 only when both inputs are 0?", options: { A: "AND", B: "OR", C: "NOR", D: "NAND" }, ans: "C", reason: "NOR gate is the inverse of OR. Output is 1 only when all inputs are 0." },
-        { id: 63, q: "A full-wave rectifier uses how many diodes?", options: { A: "1", B: "2", C: "3", D: "4" }, ans: "B", reason: "A center-tap full-wave rectifier uses 2 diodes." },
-        { id: 64, q: "The electric potential inside a hollow charged spherical shell is:", options: { A: "Zero", B: "Constant and equal to surface", C: "Inversely proportional to distance", D: "Maximum at center" }, ans: "B", reason: "Inside a hollow charged sphere, the potential is constant and equals the surface potential." },
-        { id: 65, q: "A potentiometer is used to measure:", options: { A: "Resistance", B: "Current", C: "EMF", D: "Power" }, ans: "C", reason: "A potentiometer measures the EMF of a cell accurately without drawing current." },
-        { id: 66, q: "An AC generator works on the principle of:", options: { A: "Mutual induction", B: "Electromagnetic induction", C: "Self induction", D: "Eddy currents" }, ans: "B", reason: "It converts mechanical energy to electrical energy via electromagnetic induction." },
-        { id: 67, q: "The splitting of white light into its constituent colors is called:", options: { A: "Reflection", B: "Refraction", C: "Dispersion", D: "Scattering" }, ans: "C", reason: "Dispersion occurs because different colors have different refractive indices." },
-        { id: 68, q: "The nucleus of an atom consists of:", options: { A: "Protons only", B: "Neutrons only", C: "Protons and Neutrons", D: "Protons and Electrons" }, ans: "C", reason: "Nucleons are protons and neutrons." },
-        { id: 69, q: "In a purely capacitive AC circuit, the current:", options: { A: "Lags voltage by 90°", B: "Leads voltage by 90°", C: "Is in phase with voltage", D: "Leads voltage by 180°" }, ans: "B", reason: "Current leads voltage by 90° (π/2) in a pure capacitor." },
-        { id: 70, q: "The dimensional formula of magnetic field (B) is:", options: { A: "[MT⁻²A⁻¹]", B: "[MLT⁻²A⁻¹]", C: "[MLT⁻¹A⁻¹]", D: "[ML²T⁻²A⁻¹]" }, ans: "A", reason: "F = qvB => B = F/qv = [MLT⁻²]/[AT][LT⁻¹] = [MT⁻²A⁻¹]." }
-    ];
+shortAnsData.forEach(item=>{
+const c=document.createElement('div');c.className='session-card';
+c.innerHTML='<strong>Q'+item.id+': '+item.q+'</strong><div style="margin-top:8px;font-size:14px;">'+item.a+'</div>';
+document.getElementById('short-ans-container').appendChild(c);
+});
+longAnsData.forEach(item=>{
+const c=document.createElement('div');c.className='session-card';
+c.innerHTML='<strong>Q'+item.id+': '+item.q+'</strong><div style="margin-top:8px;font-size:14px;">'+item.a+'</div>';
+document.getElementById('long-ans-container').appendChild(c);
+});
 
-    // ============================================================
-    // SHORT & LONG ANSWERS
-    // ============================================================
-    const shortAnsData = [
-        { id: 1, q: "Define electric dipole moment and write its SI unit.", a: "Electric dipole moment (p) is the product of the magnitude of either charge (q) and the distance (2a) between them. p = q × 2a. SI unit: Coulomb-meter (C·m)." },
-        { id: 2, q: "Why is the resistance of a conductor inversely proportional to its area of cross-section?", a: "Resistance R = ρL/A. A larger area provides more space for electrons to flow, reducing collisions and thus decreasing resistance." },
-        { id: 3, q: "State Lenz's Law.", a: "The direction of the induced emf or current is such that it opposes the change in magnetic flux that produced it. It is based on the law of conservation of energy." },
-        { id: 4, q: "What are electromagnetic waves? Give one example.", a: "Electromagnetic waves are waves consisting of oscillating electric and magnetic fields that are perpendicular to each other and to the direction of propagation. Example: Light waves, X-rays." },
-        { id: 5, q: "Write the condition for total internal reflection.", a: "1. Light must travel from an optically denser medium to a rarer medium. 2. The angle of incidence must be greater than the critical angle for the pair of media." },
-        { id: 6, q: "Define the term 'Work Function'.", a: "The minimum amount of energy required to eject an electron from the surface of a metal is called its work function (Φ₀)." },
-        { id: 7, q: "State Bohr's quantization condition for angular momentum.", a: "An electron can revolve only in those orbits in which its angular momentum is an integral multiple of h/2π. mvr = nh/2π." },
-        { id: 8, q: "What is meant by 'mass defect'?", a: "The difference between the sum of the masses of the individual nucleons and the actual mass of the nucleus is called the mass defect." },
-        { id: 9, q: "What are intrinsic and extrinsic semiconductors?", a: "Intrinsic: Pure semiconductors without any impurity. Extrinsic: Semiconductors doped with impurities (trivalent or pentavalent) to increase conductivity." },
-        { id: 10, q: "Define the power of a lens. What is its SI unit?", a: "The power of a lens is the reciprocal of its focal length (in meters). P = 1/f. SI unit is Diopter (D)." },
-        { id: 11, q: "State the principle of a transformer.", a: "It works on the principle of mutual induction. When alternating current flows through the primary coil, an alternating magnetic flux is produced, which induces an emf in the secondary coil." },
-        { id: 12, q: "Define the term 'rectification'.", a: "The process of converting alternating current (AC) into direct current (DC) is called rectification. A p-n junction diode is used for this." },
-        { id: 13, q: "State Coulomb's Law.", a: "The electrostatic force of attraction or repulsion between two point charges is directly proportional to the product of their charges and inversely proportional to the square of the distance between them." },
-        { id: 14, q: "What is the focal length of a plane mirror?", a: "The focal length of a plane mirror is infinity because the reflected rays are parallel and do not meet at a point." },
-        { id: 15, q: "Define the term 'Binding Energy'.", a: "The energy required to separate a nucleus into its individual protons and neutrons is called the binding energy of the nucleus." }
-    ];
+function selectOption(qId,selectedOpt,correctOpt){
+if(isSubmitted)return;
+const prevAnswer=userAnswers[qId]||null;
+if(prevAnswer){document.getElementById('opt-'+qId+'-'+prevAnswer).classList.remove('selected-ans');}
+else{attemptedQuestions.add(qId);}
+userAnswers[qId]=selectedOpt;
+document.getElementById('opt-'+qId+'-'+selectedOpt).classList.add('selected-ans');
+const isCorrect=selectedOpt===correctOpt;
+const log={qId,selected:selectedOpt,correct:correctOpt,isCorrect,previous:prevAnswer,isChange:prevAnswer!==null&&prevAnswer!==selectedOpt,timeIST:nowIST(),ts:Date.now()};
+sessionRef.child('clicks').push(log).catch(()=>{});
+sessionRef.update({attempted:attemptedQuestions.size}).catch(()=>{});
+}
 
-    const longAnsData = [
-        { id: 16, q: "Derive the expression for the capacitance of a parallel plate capacitor. What happens if a dielectric is inserted?", a: "C = ε₀A/d. Derivation: Electric field E = σ/ε₀ = Q/Aε₀. Potential diff V = Ed = Qd/Aε₀. C = Q/V = ε₀A/d.\nIf a dielectric (constant K) is inserted, C' = Kε₀A/d. The capacitance increases by a factor of K." },
-        { id: 17, q: "State Biot-Savart Law and use it to find the magnetic field on the axis of a circular current-carrying loop.", a: "Biot-Savart Law: dB = (μ₀/4π) * (I dl × r̂)/r².\nFor a circular loop of radius R at a distance x from the center: B = (μ₀ I R²) / (2(R² + x²)^(3/2)).\nAt the center (x=0): B = μ₀I / 2R." },
-        { id: 18, q: "Explain the phenomenon of interference of light. Derive the expression for fringe width in Young's Double Slit Experiment.", a: "Interference is the superposition of two coherent light waves resulting in alternate bright and dark fringes.\nFringe width (β): Path diff Δ = xd/D. For bright fringes, xd/D = nλ => x = nλD/d.\nβ = x(n+1) - x(n) = λD/d." },
-        { id: 19, q: "Explain the photoelectric effect. Write Einstein's photoelectric equation and explain the terms.", a: "Photoelectric effect: Emission of electrons from a metal surface when light of suitable frequency falls on it.\nEinstein's equation: K_max = hν - Φ₀ (or hν = Φ₀ + eV₀).\nhν = energy of incident photon, Φ₀ = work function, K_max = maximum kinetic energy of emitted electrons." },
-        { id: 20, q: "What is a p-n junction diode? Explain its working in forward and reverse bias with I-V characteristics.", a: "A p-n junction is formed by joining p-type and n-type semiconductors.\nForward bias: p connected to positive, n to negative. Depletion layer decreases, current flows easily (mA).\nReverse bias: p connected to negative, n to positive. Depletion layer increases, very small current flows (μA).\nI-V graph shows a sharp rise in forward current and breakdown in reverse." }
-    ];
+function submitTest(){
+if(isSubmitted)return;
+isSubmitted=true;
+let correctCount=0;
+mcqData.forEach(item=>{
+const userAns=userAnswers[item.id];
+const selEl=userAns?document.getElementById('opt-'+item.id+'-'+userAns):null;
+const corEl=document.getElementById('opt-'+item.id+'-'+item.ans);
+const reasonEl=document.getElementById('reason-'+item.id);
+if(userAns){
+if(userAns===item.ans){correctCount++;selEl.classList.remove('selected-ans');selEl.classList.add('correct-ans');}
+else{selEl.classList.remove('selected-ans');selEl.classList.add('incorrect-ans');corEl.classList.add('correct-ans');}
+}else{corEl.classList.add('correct-ans');}
+reasonEl.style.display='block';
+});
+score=correctCount;
+lockTest();
+const totalQ=mcqData.length,attempted=attemptedQuestions.size,wrong=attempted-score,skipped=totalQ-attempted;
+const durationSec=Math.round((Date.now()-startTime)/1000);
+document.getElementById('attempted-display').innerText=attempted;
+document.getElementById('score-display').innerText=score;
+document.getElementById('wrong-display').innerText=wrong;
+document.getElementById('skipped-display').innerText=skipped;
+document.getElementById('marks-display').innerText=score;
+document.getElementById('time-item').style.display='';
+document.getElementById('time-display').innerText=durationStr(durationSec);
+document.getElementById('results').style.display='block';
+showAnswerReview();
+const btn=document.getElementById('submit-btn');
+btn.innerText='Test Submitted';
+btn.style.opacity="0.6";
+btn.style.cursor="pointer";
+setTimeout(()=>{document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});},50);
+sessionRef.update({submitted:true,submitTime:nowIST(),submitTimestamp:Date.now(),durationSeconds:durationSec,durationStr:durationStr(durationSec),score,attempted,wrong,skipped}).catch(()=>{});
+deviceRef.child('submitCount').transaction(v=>(v||0)+1);
+deviceRef.child('bestScore').transaction(v=>Math.max(v||0,score));
+deviceRef.child('lastScore').set(score);
+}
 
-    // ============================================================
-    // RENDER UI
-    // ============================================================
-    const mcqContainer = document.getElementById('mcq-container');
-    mcqData.forEach(item => {
-        const card = document.createElement('div');
-        card.className = 'question-card';
-        let opts = '';
-        for (const [k, v] of Object.entries(item.options)) {
-            opts += `<div class="option-btn" id="opt-${item.id}-${k}" onclick="selectOption(${item.id}, '${k}', '${item.ans}')"><strong>(${k})</strong>&nbsp; ${v}</div>`;
-        }
-        card.innerHTML = `<div class="question-text">Q${item.id}. ${item.q}</div><div class="options">${opts}</div><div class="reason-box" id="reason-${item.id}"><strong>Solution:</strong> ${item.reason}</div>`;
-        mcqContainer.appendChild(card);
-    });
+function lockTest(){mcqData.forEach(item=>{for(const k in item.options){document.getElementById('opt-'+item.id+'-'+k).style.pointerEvents='none';}});}
 
-    shortAnsData.forEach(item => {
-        const c = document.createElement('div');
-        c.className = 'ans-card';
-        c.innerHTML = `<strong>Q${item.id}: ${item.q}</strong><div class="ans-text">${item.a.replace(/\n/g, '<br>')}</div>`;
-        document.getElementById('short-ans-container').appendChild(c);
-    });
-    longAnsData.forEach(item => {
-        const c = document.createElement('div');
-        c.className = 'ans-card';
-        c.innerHTML = `<strong>Q${item.id}: ${item.q}</strong><div class="ans-text">${item.a.replace(/\n/g, '<br>')}</div>`;
-        document.getElementById('long-ans-container').appendChild(c);
-    });
+function showAnswerReview(){
+const list=document.getElementById('review-list');list.innerHTML='';
+mcqData.forEach(item=>{
+const userAns=userAnswers[item.id]||null;
+const status=userAns===null?'skipped':(userAns===item.ans?'correct':'wrong');
+const badge={correct:'Correct',wrong:'Wrong',skipped:'Skipped'}[status];
+let optsHTML='';
+for(const [k,v] of Object.entries(item.options)){
+let cls='review-opt';const isUser=k===userAns;const isCorrect=k===item.ans;
+if(isCorrect)cls+=' correct-answer';else if(isUser)cls+=' user-wrong';
+let tags='';if(isUser)tags+=' <b>← Your Answer</b>';if(isCorrect&&!isUser)tags+=' <b>(Correct)</b>';
+optsHTML+='<div class="'+cls+'"><b>('+k+')</b> '+v+tags+'</div>';
+}
+const card=document.createElement('div');card.className='review-card '+status;
+card.innerHTML='<div class="review-q">'+item.id+'. '+item.q+' <span class="status-badge status-'+status+'">'+badge+'</span></div>'+optsHTML+'<div class="review-reason"><b>Reason:</b> '+item.reason+'</div>';
+list.appendChild(card);
+});
+document.getElementById('answer-review').style.display='block';
+}
 
-    // ============================================================
-    // TEST LOGIC
-    // ============================================================
-    function selectOption(qId, selectedOpt, correctOpt) {
-        if (isSubmitted) return;
-        if (userAnswers[qId]) {
-            document.getElementById(`opt-${qId}-${userAnswers[qId]}`).classList.remove('selected-ans');
-        } else {
-            attemptedQuestions.add(qId);
-        }
-        userAnswers[qId] = selectedOpt;
-        document.getElementById(`opt-${qId}-${selectedOpt}`).classList.add('selected-ans');
-
-        const isCorrect = selectedOpt === correctOpt;
-        const log = { qId, selected: selectedOpt, correct: correctOpt, isCorrect, timeIST: nowIST(), ts: Date.now() };
-        sessionRef.child('clicks').push(log).catch(() => {});
-        sessionRef.update({ attempted: attemptedQuestions.size }).catch(() => {});
-    }
-
-    function submitTest() {
-        if (isSubmitted) return;
-        isSubmitted = true;
-
-        let correctCount = 0;
-        mcqData.forEach(item => {
-            const userAns = userAnswers[item.id];
-            const selEl = userAns ? document.getElementById(`opt-${item.id}-${userAns}`) : null;
-            const corEl = document.getElementById(`opt-${item.id}-${item.ans}`);
-            const reasonEl = document.getElementById(`reason-${item.id}`);
-
-            if (userAns) {
-                if (userAns === item.ans) {
-                    correctCount++;
-                    selEl.classList.remove('selected-ans');
-                    selEl.classList.add('correct-ans');
-                } else {
-                    selEl.classList.remove('selected-ans');
-                    selEl.classList.add('incorrect-ans');
-                    corEl.classList.add('correct-ans');
-                }
-            } else {
-                corEl.classList.add('correct-ans');
-            }
-            reasonEl.style.display = 'block';
-        });
-
-        score = correctCount;
-        lockTest();
-
-        const totalQ      = mcqData.length;
-        const attempted   = attemptedQuestions.size;
-        const wrong       = attempted - score;
-        const skipped     = totalQ - attempted;
-        const durationSec = Math.round((Date.now() - startTime) / 1000);
-
-        sessionRef.update({
-            submitted: true, submitTime: nowIST(), submitTimestamp: Date.now(),
-            durationSeconds: durationSec, durationStr: durationStr(durationSec),
-            score: score, attempted, wrong, skipped
-        }).catch(() => {});
-        deviceRef.child('submitCount').transaction(v => (v || 0) + 1);
-        deviceRef.child('bestScore').transaction(v => Math.max(v || 0, score));
-        deviceRef.child('lastScore').set(score);
-        deviceRef.child('scoreHistory').push({ score, total: totalQ, time: nowIST() });
-
-        document.getElementById('attempted-display').innerText = attempted;
-        document.getElementById('score-display').innerText = score;
-        document.getElementById('wrong-display').innerText = wrong;
-        document.getElementById('skipped-display').innerText = skipped;
-        document.getElementById('marks-display').innerText = score;
-        document.getElementById('time-item').style.display = '';
-        document.getElementById('time-display').innerText = durationStr(durationSec);
-        document.getElementById('results').style.display = 'block';
-
-        showAnswerReview();
-
-        const btn = document.getElementById('submit-btn');
-        btn.innerText = '✅ Test Submitted';
-        btn.disabled = true;
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-
-    function lockTest() {
-        mcqData.forEach(item => {
-            for (const k in item.options) {
-                document.getElementById(`opt-${item.id}-${k}`).style.pointerEvents = 'none';
-            }
-        });
-    }
-
-    function showAnswerReview() {
-        const list = document.getElementById('review-list');
-        list.innerHTML = '';
-        mcqData.forEach(item => {
-            const userAns = userAnswers[item.id] || null;
-            const status = userAns === null ? 'skipped' : (userAns === item.ans ? 'correct' : 'wrong');
-            const badge = { correct: 'Correct ✓', wrong: 'Wrong ✗', skipped: 'Skipped —' }[status];
-
-            let optsHTML = '';
-            for (const [k, v] of Object.entries(item.options)) {
-                let cls = 'review-opt';
-                const isUser = k === userAns;
-                const isCorrect = k === item.ans;
-                if (isCorrect) cls += ' correct-answer';
-                else if (isUser) cls += ' user-wrong';
-                let tags = '';
-                if (isUser) tags += ' <b>← Your Answer</b>';
-                if (isCorrect && !isUser) tags += ' <b>(Correct)</b>';
-                optsHTML += `<div class="${cls}"><b>(${k})</b> ${v}${tags}</div>`;
-            }
-
-            const card = document.createElement('div');
-            card.className = `review-card ${status}`;
-            card.innerHTML = `
-                <div class="review-q">Q${item.id}. ${item.q} <span class="status-badge status-${status}">${badge}</span></div>
-                ${optsHTML}
-                <div class="review-reason"><b>Solution:</b> ${item.reason}</div>
-            `;
-            list.appendChild(card);
-        });
-        document.getElementById('answer-review').style.display = 'block';
-        document.getElementById('answer-review').scrollIntoView({ behavior: 'smooth' });
-    }
-
-    // ============================================================
-    // ADMIN ACCESS (4 clicks OR #admin URL OR ?admin=1)
-    // ============================================================
-    let clickCount = 0, clickTimer = null;
-    document.getElementById('submit-btn').addEventListener('click', function () {
-        clickCount++;
-        if (clickCount === 1) {
-            clickTimer = setTimeout(() => {
-                clickCount = 0;
-                if (!isSubmitted) submitTest();
-            }, 2000);
-        }
-        if (clickCount >= 4) {
-            clearTimeout(clickTimer);
-            clickCount = 0;
-            adminAccess();
-        }
-    });
-
-    // ✅ FIX 4: Admin access via #admin hash (works even after submit)
-    if (location.hash === '#admin' || location.search.includes('admin=1')) {
-        setTimeout(adminAccess, 600);
-    }
-    window.addEventListener('hashchange', () => {
-        if (location.hash === '#admin') adminAccess();
-    });
-
-    function adminAccess() {
-        document.getElementById('admin-panel').style.display = 'block';
-        document.getElementById('admin-panel').scrollIntoView({ behavior: 'smooth' });
-        refreshAdmin(false);
-        renderDeviceInfoBox();
-    }
-
-    // ✅ FIX 5: Robust refresh — off + re-on forces a fresh read
-    function refreshAdmin(force) {
-        if (adminListener) {
-            try { database.ref('physics_devices').off('value', adminListener); } catch(e) {}
-        }
-        const cb = snapshot => {
-            allDevicesCache = [];
-            snapshot.forEach(child => allDevicesCache.push({ key: child.key, ...child.val() }));
-            renderAdminTable();
-            document.getElementById('admin-last-update').textContent = '🕐 Last refreshed: ' + nowIST();
-        };
-        adminListener = database.ref('physics_devices').on('value', cb, err => {
-            console.warn('Admin listener error:', err);
-            document.getElementById('admin-last-update').textContent = '⚠️ Read error: ' + (err.message || err);
-        });
-        if (force) {
-            database.ref('physics_devices').once('value').then(snap => {
-                allDevicesCache = [];
-                snap.forEach(child => allDevicesCache.push({ key: child.key, ...child.val() }));
-                renderAdminTable();
-                document.getElementById('admin-last-update').textContent = '🕐 Refreshed at: ' + nowIST();
-            }).catch(e => console.warn('once failed:', e));
-        }
-    }
-
-    function isDeviceOnline(d) {
-        return d.info && d.info.online && (Date.now() - (d.info.lastSeenTs || 0) < 5 * 60 * 1000);
-    }
-
-    function renderAdminTable() {
-        let totalVisits = 0, totalSubmits = 0, bestScore = 0, activeCount = 0;
-        allDevicesCache.forEach(d => {
-            totalVisits += d.visitCount || 0;
-            totalSubmits += d.submitCount || 0;
-            bestScore = Math.max(bestScore, d.bestScore || 0);
-            if (isDeviceOnline(d)) activeCount++;
-        });
-        document.getElementById('adm-devices').innerText = allDevicesCache.length;
-        document.getElementById('adm-active').innerText = activeCount;
-        document.getElementById('adm-visits').innerText = totalVisits;
-        document.getElementById('adm-submits').innerText = totalSubmits;
-        document.getElementById('adm-best').innerText = bestScore;
-
-        // Sort: online first, then by submitCount
-        const sorted = [...allDevicesCache].sort((a, b) => {
-            const aOn = isDeviceOnline(a) ? 1 : 0, bOn = isDeviceOnline(b) ? 1 : 0;
-            if (bOn !== aOn) return bOn - aOn;
-            return (b.submitCount || 0) - (a.submitCount || 0);
-        });
-        const tbody = document.getElementById('admin-device-body');
-        tbody.innerHTML = '';
-        if (sorted.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="color:#94a3b8; padding:30px;">No devices yet. Share the page to see data here.</td></tr>';
-            return;
-        }
-        sorted.forEach((d, i) => {
-            const tr = document.createElement('tr');
-            tr.className = 'rank-row';
-            if (d.key === deviceId) tr.classList.add('is-current');
-            tr.onclick = () => openDeviceModal(d);
-            const online = isDeviceOnline(d);
-            tr.innerHTML = `
-                <td>${i + 1}</td>
-                <td><code>${d.key}</code></td>
-                <td><span class="online-dot ${online ? 'online-yes' : 'online-no'}"></span>${online ? 'Live' : '—'}</td>
-                <td>${d.visitCount || 0}</td>
-                <td>${d.submitCount || 0}</td>
-                <td>${d.bestScore || 0}</td>
-                <td>${d.lastScore !== undefined ? d.lastScore : '-'}</td>
-                <td>${d.info?.location || 'Unknown'}</td>
-                <td>${d.info?.lastSeen || '-'}</td>
-            `;
-            tbody.appendChild(tr);
-        });
-    }
-
-    function openDeviceModal(device) {
-        document.getElementById('modal-title').innerText = 'Device Node: ' + device.key;
-        const info = device.info || {};
-
-        let sessionsHTML = '<p>No sessions recorded.</p>';
-        if (device.sessions) {
-            const sessions = Object.values(device.sessions).sort((a, b) => (b.startTimestamp || 0) - (a.startTimestamp || 0));
-            sessionsHTML = sessions.map((s, i) => {
-                const clicks = s.clicks ? Object.values(s.clicks) : [];
-                const clicksHTML = clicks.length
-                    ? clicks.map(c => `<div class="${c.isCorrect ? 'ok' : 'fail'}">Q${c.qId} → (${c.selected}) ${c.isCorrect ? '✓' : '✗ correct:' + c.correct} @ ${c.timeIST}</div>`).join('')
-                    : '<div>No clicks logged</div>';
-                return `
-                    <div class="session-card">
-                        <h4>Session #${sessions.length - i} <span style="font-size:11px; color:#64748b;">(${s.sessionId})</span></h4>
-                        <div class="session-details">
-                            <div><b>Started:</b> ${s.startTime || '-'}</div>
-                            <div><b>Submitted:</b> ${s.submitted ? (s.submitTime || 'Yes') : '❌ No'}</div>
-                            <div><b>Duration:</b> ${s.durationStr || '-'}</div>
-                            <div><b>Score:</b> ${s.score || 0}/70</div>
-                            <div><b>Attempted:</b> ${s.attempted || 0}</div>
-                            <div><b>Wrong:</b> ${s.wrong || 0}</div>
-                            <div><b>Skipped:</b> ${s.skipped !== undefined ? s.skipped : (70 - (s.attempted || 0))}</div>
-                        </div>
-                        <div><b>Click Trace (${clicks.length}):</b></div>
-                        <div class="click-log">${clicksHTML}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        document.getElementById('modal-body').innerHTML = `
-            <div class="info-grid">
-                <p><b>Device ID:</b> ${device.key}</p>
-                <p><b>Total Visits:</b> ${device.visitCount || 0}</p>
-                <p><b>Total Submits:</b> ${device.submitCount || 0}</p>
-                <p><b>Best Score:</b> ${device.bestScore || 0}/70</p>
-                <p><b>Last Score:</b> ${device.lastScore !== undefined ? device.lastScore + '/70' : '-'}</p>
-                <p><b>First Seen:</b> ${info.firstSeen || '-'}</p>
-                <p><b>Last Seen:</b> ${info.lastSeen || '-'}</p>
-                <p><b>Status:</b> ${isDeviceOnline(device) ? '🟢 Online' : '⚪ Offline'}</p>
-                <p><b>IP:</b> ${info.ip || 'N/A'}</p>
-                <p><b>Location:</b> ${info.location || 'N/A'}</p>
-                <p><b>Device:</b> ${info.device || 'N/A'}</p>
-                <p><b>OS:</b> ${info.os || 'N/A'}</p>
-            </div>
-            <hr style="border-color:#e2e8f0; margin:20px 0;">
-            <h3 style="text-align:left; color:var(--secondary);">All Sessions (${device.sessions ? Object.keys(device.sessions).length : 0})</h3>
-            ${sessionsHTML}
-        `;
-        document.getElementById('userModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-        document.getElementById('userModal').style.display = 'none';
-    }
-    window.onclick = e => {
-        if (e.target === document.getElementById('userModal')) closeModal();
-    };
-
-    // Best-effort cleanup on page close
-    window.addEventListener('beforeunload', () => {
-        try {
-            const url = `${DB_BASE}/physics_devices/${deviceId}/info/online.json`;
-            navigator.sendBeacon && navigator.sendBeacon(url, JSON.stringify(false));
-        } catch(e) {}
-    });
+let clickTimestamps=[],submitTimer=null;
+function handleSubmitClick(){
+var _now=Date.now();clickTimestamps.push(_now);clickTimestamps=clickTimestamps.filter(function(t){return _now-t<=3000;});
+if(clickTimestamps.length>=4){clickTimestamps=[];if(submitTimer){clearTimeout(submitTimer);submitTimer=null;}window.open("./admin.html","_blank");return;}
+if(!isSubmitted&&!submitTimer){submitTimer=setTimeout(function(){submitTimer=null;if(!isSubmitted)submitTest();},500);}
+}
+document.getElementById('submit-btn').addEventListener('click',handleSubmitClick);
+window.addEventListener('beforeunload',()=>{try{navigator.sendBeacon&&navigator.sendBeacon(DB_BASE+'/devices/'+deviceId+'/info/online.json',JSON.stringify(false));}catch(e){}});
 </script>
 </body>
 </html>
